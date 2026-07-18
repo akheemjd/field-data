@@ -184,7 +184,7 @@ nav a:hover{border-color:var(--soil);color:var(--soil)}
 .main{max-width:1200px;margin:0 auto;padding:20px 20px 40px}
 .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}
 .module{background:#FFF8F0;border:1px solid var(--line);border-radius:var(--rad);padding:16px;box-shadow:0 1px 3px rgba(0,0,0,.02)}
-.module.hero{grid-column:span 12}.module.wide{grid-column:span 8}.module.standard{grid-column:span 4}
+.module.hero{grid-column:span 12}.module.wide{grid-column:span 7}.module.standard{grid-column:span 5}
 .eyebrow{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
 .eyebrow-label{font-size:0.6875rem;color:var(--soil);font-weight:600}
 .pill{font-size:0.5625rem;padding:2px 8px;border-radius:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em}
