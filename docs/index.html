@@ -4,16 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 
-<title>Field Data — Ag Market Dashboard | Grain, FX, Fertilizer, Rail, Ports</title>
-<meta name="description" content="Free live dashboard for Canadian agriculture. Grain prices, fertilizer index, rail rates, port volumes, weather. No signup.">
+<title>Field Data — Ag Market Dashboard | SQLite-Backed</title>
+<meta name="description" content="Free live dashboard for Canadian agriculture. Grain prices, fertilizer, FX, rail, ports. 90-day history. SQLite-backed.">
 <link rel="canonical" href="https://fielddata.co/">
 <meta property="og:title" content="Field Data — Ag Market Dashboard">
-<meta property="og:description" content="Grain, fertilizer, FX, rail. Free. Always.">
+<meta property="og:description" content="Grain, fertilizer, FX, rail. 90-day history. Free. Always.">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600&family=IBM+Plex+Mono:wght@400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{--soil:#3E2C1C;--wheat:#F5E6D0;--straw:#C4A882;--clay:#8B6914;--field:#5C4033;--sprout:#4A7C3F;--amber:#E8A317;--rust:#B7410E;--line:#D4C4B0;--rad:8px}
+:root{--soil:#3E2C1C;--wheat:#F5E6D0;--straw:#C4A882;--clay:#8B6914;--sprout:#4A7C3F;--amber:#E8A317;--rust:#B7410E;--line:#D4C4B0;--rad:8px}
 body{background:var(--wheat);color:var(--soil);font-family:'Inter',-apple-system,sans-serif;font-size:0.875rem;line-height:1.5}
 *{font-variant-numeric:tabular-nums}
 .nums{font-family:'Barlow Condensed',sans-serif;font-weight:600}
@@ -53,109 +53,110 @@ td{padding:6px 8px;border-bottom:1px solid var(--line)}
 <nav><a href="#">Home</a><a href="#">About</a><a href="#">Blog</a></nav>
 
 <div class="main">
-  <div style="text-align:center;padding:8px 18px;margin-bottom:18px;font-size:0.875rem;color:var(--clay);">Live grain, fertilizer, FX, rail & port data. Free. Always.</div>
+  <div style="text-align:center;padding:8px 18px;margin-bottom:18px;font-size:0.875rem;color:var(--clay);">Live grain, fertilizer, FX, rail & port data. 90-day history. SQLite-backed. Free.</div>
 
   <div class="grid">
     <div class="module hero">
       <div class="eyebrow"><span class="eyebrow-label">Commodity Prices</span><span class="pill pill-live">Live</span></div>
-      <div class="com-grid"><div class="com-card"><div class="com-label">Canola</div><div class="com-price">642.5<span class="com-unit">/t</span></div></div>
-<div class="com-card"><div class="com-label">Wheat</div><div class="com-price">298.75<span class="com-unit">/t</span></div></div>
-<div class="com-card"><div class="com-label">Durum</div><div class="com-price">326.5<span class="com-unit">/t</span></div></div>
-<div class="com-card"><div class="com-label">Barley</div><div class="com-price">245.0<span class="com-unit">/t</span></div></div>
-<div class="com-card"><div class="com-label">Oats</div><div class="com-price">188.25<span class="com-unit">/t</span></div></div>
-<div class="com-card"><div class="com-label">Corn</div><div class="com-price">198.25<span class="com-unit">/t</span></div></div>
-<div class="com-card"><div class="com-label">Soy</div><div class="com-price">452.0<span class="com-unit">/t</span></div></div>
-<div class="com-card"><div class="com-label">Lentils</div><div class="com-price">785.0<span class="com-unit">/t</span></div></div>
-<div class="com-card"><div class="com-label">Flax</div><div class="com-price">612.0<span class="com-unit">/t</span></div></div>
-<div class="com-card"><div class="com-label">Peas</div><div class="com-price">412.5<span class="com-unit">/t</span></div></div>
+      <div class="com-grid"><div class="com-card"><div class="com-label">Canola</div><div class="com-price">619.5211146546569<span class="com-unit">/t</span></div></div>
+<div class="com-card"><div class="com-label">Wheat</div><div class="com-price">288.07718344935404<span class="com-unit">/t</span></div></div>
+<div class="com-card"><div class="com-label">Durum</div><div class="com-price">309.3751412849652<span class="com-unit">/t</span></div></div>
+<div class="com-card"><div class="com-label">Barley</div><div class="com-price">239.77202545109844<span class="com-unit">/t</span></div></div>
+<div class="com-card"><div class="com-label">Oats</div><div class="com-price">174.01962940133615<span class="com-unit">/t</span></div></div>
+<div class="com-card"><div class="com-label">Corn</div><div class="com-price">199.4464623179512<span class="com-unit">/t</span></div></div>
+<div class="com-card"><div class="com-label">Soy</div><div class="com-price">437.29452114582654<span class="com-unit">/t</span></div></div>
+<div class="com-card"><div class="com-label">Lentils</div><div class="com-price">772.9477075099177<span class="com-unit">/t</span></div></div>
+<div class="com-card"><div class="com-label">Flax</div><div class="com-price">597.479378772531<span class="com-unit">/t</span></div></div>
+<div class="com-card"><div class="com-label">Peas</div><div class="com-price">406.2212787098819<span class="com-unit">/t</span></div></div>
 </div>
-      <div class="card-footer">Updated 2026-07-17T20:00 &middot; ICE / CME</div>
+      <div class="card-footer">ICE / CME &middot; 2026-07-18T01:49</div>
     </div>
 
     <div class="module wide">
       <div class="eyebrow"><span class="eyebrow-label">Fertilizer Index</span><span class="pill pill-live">Weekly</span></div>
-      <table><tr><th>Product</th><th class="val">Price</th><th class="val">Change</th><th>Region</th></tr><tr><td>Urea</td><td class="val">$585</td><td class="val"><span class="com-up">+12</span></td><td>Prairies</td></tr>
-<tr><td>Potash</td><td class="val">$425</td><td class="val"><span class="">—</span></td><td>SK</td></tr>
-<tr><td>DAP</td><td class="val">$720</td><td class="val"><span class="com-down">-8</span></td><td>Prairies</td></tr>
-<tr><td>MAP</td><td class="val">$695</td><td class="val"><span class="com-up">+5</span></td><td>Prairies</td></tr>
-<tr><td>Anhydrous</td><td class="val">$890</td><td class="val"><span class="com-up">+22</span></td><td>MB</td></tr>
+      <table><tr><th>Product</th><th class="val">Price</th><th class="val">Change</th><th>Region</th></tr><tr><td>Anhydrous</td><td class="val">$884.1453427530081</td><td class="val"><span class="">—</span></td><td>MB</td></tr>
+<tr><td>DAP</td><td class="val">$718.8192631400588</td><td class="val"><span class="">—</span></td><td>Prairies</td></tr>
+<tr><td>MAP</td><td class="val">$693.2776612775817</td><td class="val"><span class="">—</span></td><td>Prairies</td></tr>
+<tr><td>Potash</td><td class="val">$415.9739704118664</td><td class="val"><span class="">—</span></td><td>SK</td></tr>
+<tr><td>Urea</td><td class="val">$572.4569190693995</td><td class="val"><span class="">—</span></td><td>Prairies</td></tr>
 </table>
-      <div class="card-footer">2026-07-17T20:00 &middot; USDA / StatsCan</div>
+      <div class="card-footer">USDA / StatsCan &middot; 2026-07-18T01:49</div>
     </div>
 
     <div class="module standard">
       <div class="eyebrow"><span class="eyebrow-label">Farm Diesel</span><span class="pill pill-live">Daily</span></div>
-      <div style="font-size:2rem;font-weight:600;" class="nums">158.9<span style="font-size:0.875rem;color:var(--clay);"> &cent;/L</span></div>
-      <div style="font-size:0.75rem;color:var(--clay);">Alberta avg &middot; Cross-linked with NMM</div>
+      <div style="font-size:2rem;font-weight:600;" class="nums">159.59639127938848<span style="font-size:0.875rem;color:var(--clay);"> &cent;/L</span></div>
+      <div style="font-size:0.75rem;color:var(--clay);">Alberta avg</div>
       <div class="card-footer">Public surveys</div>
     </div>
 
     <div class="module wide">
       <div class="eyebrow"><span class="eyebrow-label">CAD / USD</span><span class="pill pill-live">Live</span></div>
       <div style="display:flex;align-items:baseline;gap:10px;">
-        <span style="font-size:2.5rem;font-weight:600;">1.3215</span>
-        <span style="font-size:0.875rem;" class="com-up">+0.0024</span>
+        <span style="font-size:2.5rem;font-weight:600;">1.3132613596470486</span>
+        <span style="font-size:0.875rem;" class="com-down">-0.0017</span>
       </div>
       <div style="font-size:0.75rem;color:var(--clay);margin-top:4px;">H: 1.324 &middot; L: 1.319</div>
-      <div class="card-footer">Bank of Canada &middot; 2026-07-17T20:00</div>
+      <div class="card-footer">Bank of Canada &middot; 2026-07-17T01:48</div>
     </div>
 
     <div class="module standard">
       <div class="eyebrow"><span class="eyebrow-label">Canola Basis</span><span class="pill pill-live">Daily</span></div>
-      <table><tr><th>Region</th><th class="val">Futures</th><th class="val">Cash</th><th class="val">Basis</th></tr><tr><td>Central SK</td><td class="val">$642.5</td><td class="val">$638.0</td><td class="val com-up">-4.50 ↑</td></tr>
-<tr><td>Southern AB</td><td class="val">$642.5</td><td class="val">$636.75</td><td class="val ">-5.75 →</td></tr>
-<tr><td>SW Manitoba</td><td class="val">$642.5</td><td class="val">$640.25</td><td class="val com-up">-2.25 ↑</td></tr>
-<tr><td>Peace Region</td><td class="val">$642.5</td><td class="val">$622.0</td><td class="val com-down">-20.50 ↓</td></tr>
-<tr><td>Northern SK</td><td class="val">$642.5</td><td class="val">$632.5</td><td class="val ">-10.00 →</td></tr>
-<tr><td>Eastern MB</td><td class="val">$642.5</td><td class="val">$639.0</td><td class="val com-up">-3.50 ↑</td></tr>
+      <table><tr><th>Region</th><th class="val">Futures</th><th class="val">Cash</th><th class="val">Basis</th></tr><tr><td>Central SK</td><td class="val">$639.1056207957253</td><td class="val">$636.222778717794</td><td class="val ">$-</td></tr>
+<tr><td>Eastern MB</td><td class="val">$643.3056460587397</td><td class="val">$641.25621202467</td><td class="val ">$-</td></tr>
+<tr><td>Northern SK</td><td class="val">$646.9132642277859</td><td class="val">$633.1598598303103</td><td class="val ">$-</td></tr>
+<tr><td>Peace Region</td><td class="val">$644.3997583218502</td><td class="val">$622.9245131706288</td><td class="val ">$-</td></tr>
+<tr><td>SW Manitoba</td><td class="val">$645.7333126282861</td><td class="val">$637.5737359681525</td><td class="val ">$-</td></tr>
+<tr><td>Southern AB</td><td class="val">$647.3101647660831</td><td class="val">$640.2834579980464</td><td class="val ">$-</td></tr>
 </table>
-      <div class="card-footer">2026-07-17T20:00 &middot; Futures minus cash</div>
+      <div class="card-footer">Futures minus cash &middot; Today</div>
     </div>
 
     <div class="module hero">
-      <div class="eyebrow"><span class="eyebrow-label">Canola Price History — 30 Days</span><span class="pill pill-live">Daily</span></div>
-      <svg viewBox="0 0 600 140" style="width:100%;height:auto;max-height:160px;"><line x1="40" y1="10" x2="590" y2="10" stroke="var(--line)" stroke-width="0.5"/><line x1="40" y1="64" x2="590" y2="64" stroke="var(--line)" stroke-width="0.5"/><line x1="40" y1="118" x2="590" y2="118" stroke="var(--line)" stroke-width="0.5"/><line x1="40" y1="118" x2="590" y2="118" stroke="var(--line)" stroke-width="1"/><polyline points="40,89 58,71 77,118 96,45 115,85 134,56 153,67 172,43 191,91 210,85 229,56 248,70 267,72 286,35 305,31 324,29 343,36 362,54 381,56 400,48 419,22 438,25 457,20 476,28 495,21 514,29 533,18 552,12 571,10 590,10" fill="none" stroke="var(--sprout)" stroke-width="2" stroke-linejoin="round"/><circle cx="40" cy="89" r="2.5" fill="var(--sprout)"/><circle cx="58" cy="71" r="2.5" fill="var(--sprout)"/><circle cx="77" cy="118" r="2.5" fill="var(--sprout)"/><circle cx="96" cy="45" r="2.5" fill="var(--sprout)"/><circle cx="115" cy="85" r="2.5" fill="var(--sprout)"/><circle cx="134" cy="56" r="2.5" fill="var(--sprout)"/><circle cx="153" cy="67" r="2.5" fill="var(--sprout)"/><circle cx="172" cy="43" r="2.5" fill="var(--sprout)"/><circle cx="191" cy="91" r="2.5" fill="var(--sprout)"/><circle cx="210" cy="85" r="2.5" fill="var(--sprout)"/><circle cx="229" cy="56" r="2.5" fill="var(--sprout)"/><circle cx="248" cy="70" r="2.5" fill="var(--sprout)"/><circle cx="267" cy="72" r="2.5" fill="var(--sprout)"/><circle cx="286" cy="35" r="2.5" fill="var(--sprout)"/><circle cx="305" cy="31" r="2.5" fill="var(--sprout)"/><circle cx="324" cy="29" r="2.5" fill="var(--sprout)"/><circle cx="343" cy="36" r="2.5" fill="var(--sprout)"/><circle cx="362" cy="54" r="2.5" fill="var(--sprout)"/><circle cx="381" cy="56" r="2.5" fill="var(--sprout)"/><circle cx="400" cy="48" r="2.5" fill="var(--sprout)"/><circle cx="419" cy="22" r="2.5" fill="var(--sprout)"/><circle cx="438" cy="25" r="2.5" fill="var(--sprout)"/><circle cx="457" cy="20" r="2.5" fill="var(--sprout)"/><circle cx="476" cy="28" r="2.5" fill="var(--sprout)"/><circle cx="495" cy="21" r="2.5" fill="var(--sprout)"/><circle cx="514" cy="29" r="2.5" fill="var(--sprout)"/><circle cx="533" cy="18" r="2.5" fill="var(--sprout)"/><circle cx="552" cy="12" r="2.5" fill="var(--sprout)"/><circle cx="571" cy="10" r="2.5" fill="var(--sprout)"/><circle cx="590" cy="10" r="2.5" fill="var(--sprout)"/><text x="590" y="4" text-anchor="end" font-size="10" font-weight="600" fill="var(--sprout)">642.5</text><text x="40" y="134" text-anchor="middle" font-size="7" fill="var(--clay)">07--1</text><text x="590" y="134" text-anchor="middle" font-size="7" fill="var(--clay)">07-18</text></svg>
-      <div class="card-footer">From history archive &middot; Updated every 30 minutes</div>
+      <div class="eyebrow"><span class="eyebrow-label">Canola — 30 Day Price History</span><span class="pill pill-live">Daily</span></div>
+      <svg viewBox="0 0 600 140" style="width:100%;height:auto;max-height:160px;"><line x1="40" y1="10" x2="590" y2="10" stroke="var(--line)" stroke-width="0.5"/><line x1="40" y1="64" x2="590" y2="64" stroke="var(--line)" stroke-width="0.5"/><line x1="40" y1="118" x2="590" y2="118" stroke="var(--line)" stroke-width="0.5"/><line x1="40" y1="118" x2="590" y2="118" stroke="var(--line)" stroke-width="1"/><polyline points="40,14 58,44 77,40 96,41 115,42 134,68 153,77 172,93 191,51 210,60 229,59 248,25 267,104 286,109 305,88 324,70 343,77 362,25 381,118 400,101 419,28 438,107 457,11 476,10 495,79 514,11 533,82 552,92 571,93 590,39" fill="none" stroke="var(--sprout)" stroke-width="2"/><circle cx="40" cy="14" r="2.5" fill="var(--sprout)"/><circle cx="58" cy="44" r="2.5" fill="var(--sprout)"/><circle cx="77" cy="40" r="2.5" fill="var(--sprout)"/><circle cx="96" cy="41" r="2.5" fill="var(--sprout)"/><circle cx="115" cy="42" r="2.5" fill="var(--sprout)"/><circle cx="134" cy="68" r="2.5" fill="var(--sprout)"/><circle cx="153" cy="77" r="2.5" fill="var(--sprout)"/><circle cx="172" cy="93" r="2.5" fill="var(--sprout)"/><circle cx="191" cy="51" r="2.5" fill="var(--sprout)"/><circle cx="210" cy="60" r="2.5" fill="var(--sprout)"/><circle cx="229" cy="59" r="2.5" fill="var(--sprout)"/><circle cx="248" cy="25" r="2.5" fill="var(--sprout)"/><circle cx="267" cy="104" r="2.5" fill="var(--sprout)"/><circle cx="286" cy="109" r="2.5" fill="var(--sprout)"/><circle cx="305" cy="88" r="2.5" fill="var(--sprout)"/><circle cx="324" cy="70" r="2.5" fill="var(--sprout)"/><circle cx="343" cy="77" r="2.5" fill="var(--sprout)"/><circle cx="362" cy="25" r="2.5" fill="var(--sprout)"/><circle cx="381" cy="118" r="2.5" fill="var(--sprout)"/><circle cx="400" cy="101" r="2.5" fill="var(--sprout)"/><circle cx="419" cy="28" r="2.5" fill="var(--sprout)"/><circle cx="438" cy="107" r="2.5" fill="var(--sprout)"/><circle cx="457" cy="11" r="2.5" fill="var(--sprout)"/><circle cx="476" cy="10" r="2.5" fill="var(--sprout)"/><circle cx="495" cy="79" r="2.5" fill="var(--sprout)"/><circle cx="514" cy="11" r="2.5" fill="var(--sprout)"/><circle cx="533" cy="82" r="2.5" fill="var(--sprout)"/><circle cx="552" cy="92" r="2.5" fill="var(--sprout)"/><circle cx="571" cy="93" r="2.5" fill="var(--sprout)"/><circle cx="590" cy="39" r="2.5" fill="var(--sprout)"/><text x="590" y="33" text-anchor="end" font-size="10" font-weight="600" fill="var(--sprout)">619.5211146546569</text><text x="40" y="134" text-anchor="middle" font-size="7" fill="var(--clay)">06-18</text><text x="590" y="134" text-anchor="middle" font-size="7" fill="var(--clay)">07-17</text></svg>
+      <div class="card-footer">From SQLite history archive</div>
     </div>
 
     <div class="module standard">
-      <div class="eyebrow"><span class="eyebrow-label">Canola Forecast — 7 Days</span><span class="pill pill-live">Model</span></div>
-      <div style="margin-top:8px;font-size:0.625rem;color:var(--clay);margin-bottom:6px;">Linear regression on 14-day history <span class="com-up">↑</span></div><div><div style="display:flex;justify-content:space-between;padding:4px 8px;font-size:0.75rem;border-bottom:1px solid var(--line);"><span>Day +1</span><span class="val mono">$645.02</span></div><div style="display:flex;justify-content:space-between;padding:4px 8px;font-size:0.75rem;border-bottom:1px solid var(--line);"><span>Day +2</span><span class="val mono">$646.57</span></div><div style="display:flex;justify-content:space-between;padding:4px 8px;font-size:0.75rem;border-bottom:1px solid var(--line);"><span>Day +3</span><span class="val mono">$648.11</span></div><div style="display:flex;justify-content:space-between;padding:4px 8px;font-size:0.75rem;border-bottom:1px solid var(--line);"><span>Day +4</span><span class="val mono">$649.65</span></div><div style="display:flex;justify-content:space-between;padding:4px 8px;font-size:0.75rem;border-bottom:1px solid var(--line);"><span>Day +5</span><span class="val mono">$651.2</span></div><div style="display:flex;justify-content:space-between;padding:4px 8px;font-size:0.75rem;border-bottom:1px solid var(--line);"><span>Day +6</span><span class="val mono">$652.74</span></div><div style="display:flex;justify-content:space-between;padding:4px 8px;font-size:0.75rem;border-bottom:1px solid var(--line);"><span>Day +7</span><span class="val mono">$654.28</span></div></div>
-      <div class="card-footer">Statistical projection &middot; Informational only</div>
+      <div class="eyebrow"><span class="eyebrow-label">Canola — 7 Day Forecast</span><span class="pill pill-live">Model</span></div>
+      <div style="margin-top:8px;font-size:0.625rem;color:var(--clay);margin-bottom:6px;">Linear regression on 14-day history <span class="com-up">↑</span></div><div><div style="display:flex;justify-content:space-between;padding:4px 8px;font-size:0.75rem;border-bottom:1px solid var(--line);"><span>Day +1</span><span class="val mono">$616.1</span></div><div style="display:flex;justify-content:space-between;padding:4px 8px;font-size:0.75rem;border-bottom:1px solid var(--line);"><span>Day +2</span><span class="val mono">$616.22</span></div><div style="display:flex;justify-content:space-between;padding:4px 8px;font-size:0.75rem;border-bottom:1px solid var(--line);"><span>Day +3</span><span class="val mono">$616.33</span></div><div style="display:flex;justify-content:space-between;padding:4px 8px;font-size:0.75rem;border-bottom:1px solid var(--line);"><span>Day +4</span><span class="val mono">$616.45</span></div><div style="display:flex;justify-content:space-between;padding:4px 8px;font-size:0.75rem;border-bottom:1px solid var(--line);"><span>Day +5</span><span class="val mono">$616.56</span></div><div style="display:flex;justify-content:space-between;padding:4px 8px;font-size:0.75rem;border-bottom:1px solid var(--line);"><span>Day +6</span><span class="val mono">$616.68</span></div><div style="display:flex;justify-content:space-between;padding:4px 8px;font-size:0.75rem;border-bottom:1px solid var(--line);"><span>Day +7</span><span class="val mono">$616.79</span></div></div>
+      <div class="card-footer">Linear regression &middot; Informational only</div>
     </div>
 
     <div class="module wide">
       <div class="eyebrow"><span class="eyebrow-label">Growing Degree Days</span><span class="pill pill-live">Daily</span></div>
-      <table><tr><th>City</th><th class="val">GDD</th><th class="val">Normal</th><th class="val">Ahead</th></tr><tr><td>Saskatoon</td><td class="val">1185</td><td class="val">1120</td><td class="val" style="color:var(--sprout);">+4 days</td></tr>
-<tr><td>Regina</td><td class="val">1210</td><td class="val">1155</td><td class="val" style="color:var(--sprout);">+3 days</td></tr>
-<tr><td>Winnipeg</td><td class="val">1260</td><td class="val">1190</td><td class="val" style="color:var(--sprout);">+5 days</td></tr>
-<tr><td>Brandon</td><td class="val">1140</td><td class="val">1080</td><td class="val" style="color:var(--sprout);">+4 days</td></tr>
-<tr><td>Edmonton</td><td class="val">980</td><td class="val">950</td><td class="val" style="color:var(--sprout);">+2 days</td></tr>
-<tr><td>Lethbridge</td><td class="val">1320</td><td class="val">1250</td><td class="val" style="color:var(--sprout);">+7 days</td></tr>
-<tr><td>Swift Current</td><td class="val">1150</td><td class="val">1100</td><td class="val" style="color:var(--sprout);">+3 days</td></tr>
-<tr><td>Prince Albert</td><td class="val">1050</td><td class="val">1010</td><td class="val" style="color:var(--sprout);">+2 days</td></tr>
+      <table><tr><th>City</th><th class="val">GDD</th><th class="val">Normal</th><th class="val">Ahead</th></tr><tr><td>Brandon</td><td class="val">1151.7485086664942</td><td class="val">1080.0</td><td class="val" style="color:var(--sprout);">+71 days</td></tr>
+<tr><td>Edmonton</td><td class="val">970.5818100635101</td><td class="val">950.0</td><td class="val" style="color:var(--sprout);">+20 days</td></tr>
+<tr><td>Lethbridge</td><td class="val">1305.3995541566042</td><td class="val">1250.0</td><td class="val" style="color:var(--sprout);">+55 days</td></tr>
+<tr><td>Prince Albert</td><td class="val">1052.619568201253</td><td class="val">1010.0</td><td class="val" style="color:var(--sprout);">+42 days</td></tr>
+<tr><td>Regina</td><td class="val">1224.4963304054509</td><td class="val">1155.0</td><td class="val" style="color:var(--sprout);">+69 days</td></tr>
+<tr><td>Saskatoon</td><td class="val">1176.7552089469812</td><td class="val">1120.0</td><td class="val" style="color:var(--sprout);">+56 days</td></tr>
+<tr><td>Swift Current</td><td class="val">1156.827912451358</td><td class="val">1100.0</td><td class="val" style="color:var(--sprout);">+56 days</td></tr>
+<tr><td>Winnipeg</td><td class="val">1246.161644009523</td><td class="val">1190.0</td><td class="val" style="color:var(--sprout);">+56 days</td></tr>
 </table>
-      <div class="card-footer">2026-07-17T20:00 &middot; Base 5°C &middot; Open-Meteo</div>
+      <div class="card-footer">Open-Meteo &middot; Today</div>
     </div>
 
     <div class="module wide">
       <div class="eyebrow"><span class="eyebrow-label">Rail Freight</span><span class="pill pill-live">Weekly</span></div>
-      <table><tr><th>Route</th><th class="val">Rate/t</th><th class="val">Change</th></tr><tr><td>Regina → Vancouver</td><td class="val">$42.5</td><td class="val">+0.75</td></tr>
-<tr><td>Saskatoon → Churchill</td><td class="val">$38.25</td><td class="val">—</td></tr>
-<tr><td>Winnipeg → Thunder Bay</td><td class="val">$35.0</td><td class="val">-0.50</td></tr>
-<tr><td>Calgary → Vancouver</td><td class="val">$28.75</td><td class="val">+1.25</td></tr>
+      <table><tr><th>Route</th><th class="val">Rate/t</th><th class="val">Change</th></tr><tr><td>Calgary → Vancouver</td><td class="val">$27.304977813579594</td><td class="val"><span class="">—</span></td></tr>
+<tr><td>Edmonton → Prince Rupert</td><td class="val">$30.113471077952468</td><td class="val"><span class="">—</span></td></tr>
+<tr><td>Regina → Vancouver</td><td class="val">$43.44387822997753</td><td class="val"><span class="">—</span></td></tr>
+<tr><td>Saskatoon → Churchill</td><td class="val">$38.10626387951842</td><td class="val"><span class="">—</span></td></tr>
+<tr><td>Winnipeg → Thunder Bay</td><td class="val">$36.543415050704525</td><td class="val"><span class="">—</span></td></tr>
 </table>
-      <div class="card-footer">Ag Transport Coalition &middot; 2026-07-17T20:00</div>
+      <div class="card-footer">Ag Transport Coalition</div>
     </div>
 
     <div class="module standard">
       <div class="eyebrow"><span class="eyebrow-label">Grain Ports</span><span class="pill pill-live">Weekly</span></div>
-      <table><tr><th>Port</th><th class="val">Volume</th><th class="val">Trend</th></tr><tr><td>Vancouver</td><td class="val">142K t</td><td>↑</td></tr>
-<tr><td>Prince Rupert</td><td class="val">89K t</td><td>↑</td></tr>
-<tr><td>Montreal</td><td class="val">67K t</td><td>→</td></tr>
-<tr><td>Thunder Bay</td><td class="val">118K t</td><td>↓</td></tr>
+      <table><tr><th>Port</th><th class="val">Volume</th><th class="val">Week</th></tr><tr><td>Montreal</td><td class="val">61650 t</td><td>2026-07-11</td></tr>
+<tr><td>Prince Rupert</td><td class="val">90639 t</td><td>2026-07-11</td></tr>
+<tr><td>Thunder Bay</td><td class="val">118790 t</td><td>2026-07-11</td></tr>
+<tr><td>Vancouver</td><td class="val">136625 t</td><td>2026-07-11</td></tr>
 </table>
-      <div class="card-footer">Port authorities &middot; 2026-07-17T20:00</div>
+      <div class="card-footer">Port authorities</div>
     </div>
   </div>
 </div>
@@ -167,7 +168,7 @@ td{padding:6px 8px;border-bottom:1px solid var(--line)}
 </div>
 
 <footer style="padding:16px 24px;text-align:center;font-size:0.625rem;color:var(--clay);border-top:1px solid var(--line);font-family:'IBM Plex Mono',monospace;">
-  &copy; 2026 Field Data &middot; Data from public sources &middot; Informational use only
+  &copy; 2026 Field Data &middot; SQLite-backed &middot; Data from public sources &middot; Informational use only
 </footer>
 </body>
 </html>

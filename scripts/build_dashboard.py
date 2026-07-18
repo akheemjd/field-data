@@ -1,59 +1,129 @@
 #!/usr/bin/env python3
-"""Field Data — Ag market dashboard. 11 modules: commodities, fx, fertilizer, diesel, basis, gdd, rail, ports."""
-import json, os, sys, csv
+"""Field Data — Ag market dashboard. SQLite-backed. 10 modules."""
+import sqlite3, os, sys
 from datetime import datetime
 
 MODE = sys.argv[1] if len(sys.argv) > 1 else 'production'
 STAGING = MODE == 'staging'
 BASE = os.path.expanduser('~/grain-data-dashboard')
 DATA_DIR = os.path.join(BASE, 'data')
+DB_PATH = os.path.join(DATA_DIR, 'fielddata.db')
 OUT_DIR = os.path.join(BASE, 'docs', 'v2') if STAGING else os.path.join(BASE, 'docs')
 BASE_PATH = '/v2/' if STAGING else '/'
 os.makedirs(OUT_DIR, exist_ok=True)
 OUT = os.path.join(OUT_DIR, 'index.html')
 
-def load(name):
-    path = os.path.join(DATA_DIR, name)
-    return json.load(open(path)) if os.path.exists(path) else {}
+DB = sqlite3.connect(DB_PATH)
+DB.row_factory = sqlite3.Row
 
-commodities = load('commodities.json'); fuel = load('fuel.json')
-rail = load('rail.json'); port = load('port.json')
-fertilizer = load('fertilizer.json'); exchange = load('exchange.json')
-basis = load('basis.json'); gdd = load('gdd.json')
-killswitch = load('killswitch.json')
+def T(s): return str(s) if s is not None else '-'
 
-if killswitch.get('publish') == False:
-    with open(OUT,'w') as f: f.write("<!DOCTYPE html><html><body style='background:#FFF8F0'><h1>Paused</h1></body></html>")
-    sys.exit(0)
-
-# History
+# === Query latest data ===
 now_iso = datetime.utcnow().isoformat()
-hd = os.path.join(DATA_DIR,'history'); os.makedirs(hd,exist_ok=True)
-keys = ['canola','wheat','durum','barley','oats','corn','soy','lentils','flax','peas']
-p = os.path.join(hd,'commodities.csv'); exists = os.path.exists(p)
-with open(p,'a',newline='') as f:
-    w = csv.writer(f)
-    if not exists: w.writerow(['t']+keys)
-    w.writerow([now_iso]+[commodities.get(k,'') for k in keys])
 
-def T(s): return str(s)
+# Commodity prices (latest per commodity)
+coms = {}
+for row in DB.execute("SELECT commodity, price FROM (SELECT commodity, price, ROW_NUMBER() OVER (PARTITION BY commodity ORDER BY timestamp DESC) rn FROM commodity_prices) WHERE rn=1"):
+    coms[row['commodity']] = row['price']
 
-# Data rows
-com_cards = ''.join('<div class="com-card"><div class="com-label">'+n+'</div><div class="com-price">'+T(commodities.get(k,'-'))+'<span class="com-unit">/t</span></div></div>\n' for n,k in zip(['Canola','Wheat','Durum','Barley','Oats','Corn','Soy','Lentils','Flax','Peas'],keys))
+# Fuel
+fuel = {}
+for row in DB.execute("SELECT province, price FROM (SELECT province, price, ROW_NUMBER() OVER (PARTITION BY province ORDER BY timestamp DESC) rn FROM fuel_prices WHERE fuel_type='diesel') WHERE rn=1"):
+    fuel[row['province']] = row['price']
 
-fert_rows = ''.join('<tr><td>'+f['name']+'</td><td class="val">$'+T(f['price'])+'</td><td class="val"><span class="'+('com-up' if T(f.get('change','-')).startswith('+') else 'com-down' if T(f.get('change','-')).startswith('-') else '')+'">'+T(f.get('change','-'))+'</span></td><td>'+f['region']+'</td></tr>\n' for f in fertilizer.get('fertilizers',[]))
+# Exchange
+fx = DB.execute("SELECT rate, day_high, day_low, timestamp FROM exchange_rates ORDER BY timestamp DESC LIMIT 1").fetchone()
+fx_rate = fx['rate'] if fx else 1.32
+fx_hi = fx['day_high'] if fx else '-'
+fx_lo = fx['day_low'] if fx else '-'
+fx_ts = fx['timestamp'] if fx else '-'
 
-rail_rows = ''.join('<tr><td>'+r['route']+'</td><td class="val">$'+T(r.get('rate','-'))+'</td><td class="val">'+T(r.get('change','-'))+'</td></tr>\n' for r in rail.get('routes',[]))
-port_rows = ''.join('<tr><td>'+p['name']+'</td><td class="val">'+T(p.get('volume','-'))+'</td><td>'+T(p.get('trend','-'))+'</td></tr>\n' for p in port.get('ports',[]))
-basis_rows = ''.join('<tr><td>'+b['name']+'</td><td class="val">$'+T(b['futures'])+'</td><td class="val">$'+T(b['cash'])+'</td><td class="val '+('com-up' if b.get('trend')=='↑' else 'com-down' if b.get('trend')=='↓' else '')+'">'+T(b.get('basis','-'))+' '+T(b.get('trend','-'))+'</td></tr>\n' for b in basis.get('regions',[]))
-gdd_rows = ''.join('<tr><td>'+g['city']+'</td><td class="val">'+T(g['gdd'])+'</td><td class="val">'+T(g['normal'])+'</td><td class="val" style="color:var(--sprout);">+'+T(g.get('days_ahead',''))+' days</td></tr>\n' for g in gdd.get('cities',[]))
+# Fertilizer
+ferts = DB.execute("SELECT product, region, price, (price - LAG(price) OVER (PARTITION BY product, region ORDER BY timestamp)) as change FROM (SELECT product, region, price, timestamp, ROW_NUMBER() OVER (PARTITION BY product, region ORDER BY timestamp DESC) rn FROM fertilizer_prices) WHERE rn<=1").fetchall()
 
-fx_rate = exchange.get('rate','-'); fx_chg = T(exchange.get('change','-'))
-fx_cls = 'com-up' if fx_chg.startswith('+') else 'com-down'
-fuel_p = fuel.get('diesel_ab','-')
+# Rail
+rails = DB.execute("SELECT origin, destination, rate, (rate - LAG(rate) OVER (PARTITION BY origin, destination ORDER BY timestamp)) as change FROM (SELECT origin, destination, rate, timestamp, ROW_NUMBER() OVER (PARTITION BY origin, destination ORDER BY timestamp DESC) rn FROM rail_rates) WHERE rn<=1").fetchall()
+
+# Port
+ports = DB.execute("SELECT port_name, volume_tonnes, week_ending FROM (SELECT port_name, volume_tonnes, week_ending, ROW_NUMBER() OVER (PARTITION BY port_name ORDER BY week_ending DESC) rn FROM port_volumes) WHERE rn<=1").fetchall()
+
+# Basis
+basis_rows = DB.execute("SELECT region, futures_price, cash_price, basis FROM (SELECT region, futures_price, cash_price, basis, ROW_NUMBER() OVER (PARTITION BY region ORDER BY date DESC) rn FROM basis_data) WHERE rn<=1").fetchall()
+
+# GDD
+gdds = DB.execute("SELECT city, gdd, normal_gdd FROM (SELECT city, gdd, normal_gdd, ROW_NUMBER() OVER (PARTITION BY city ORDER BY date DESC) rn FROM gdd_data) WHERE rn<=1").fetchall()
+
+# Charts — 30 day canola history
+chart_html = ''
+canola_hist = DB.execute("SELECT price, timestamp FROM commodity_prices WHERE commodity='canola' ORDER BY timestamp DESC LIMIT 30").fetchall()
+if len(canola_hist) >= 2:
+    vals = [r['price'] for r in reversed(canola_hist)]
+    dates = [r['timestamp'][:10] for r in reversed(canola_hist)]
+    mi, mx = min(vals), max(vals)
+    rng = mx - mi or 10
+    W, H = 600, 140
+    pL, pR, pT, pB = 40, 10, 10, 22
+    pw, ph = W-pL-pR, H-pT-pB
+    s = '<svg viewBox="0 0 '+str(W)+' '+str(H)+'" style="width:100%;height:auto;max-height:160px;">'
+    for i in range(3):
+        y = pT + ph*(i/2)
+        s += '<line x1="'+str(pL)+'" y1="'+str(int(y))+'" x2="'+str(W-pR)+'" y2="'+str(int(y))+'" stroke="var(--line)" stroke-width="0.5"/>'
+    s += '<line x1="'+str(pL)+'" y1="'+str(H-pB)+'" x2="'+str(W-pR)+'" y2="'+str(H-pB)+'" stroke="var(--line)" stroke-width="1"/>'
+    pts = []
+    for i,v in enumerate(vals):
+        x = pL + (pw*i/max(1,len(vals)-1))
+        y = pT + ph - ((v-mi)/rng*ph)
+        pts.append(str(int(x))+','+str(int(y)))
+    s += '<polyline points="'+' '.join(pts)+'" fill="none" stroke="var(--sprout)" stroke-width="2"/>'
+    for i,v in enumerate(vals):
+        x = pL+(pw*i/max(1,len(vals)-1))
+        y = pT+ph-((v-mi)/rng*ph)
+        s += '<circle cx="'+str(int(x))+'" cy="'+str(int(y))+'" r="2.5" fill="var(--sprout)"/>'
+    s += '<text x="'+str(int(pL+pw))+'" y="'+str(int(pT+ph-((vals[-1]-mi)/rng*ph))-6)+'" text-anchor="end" font-size="10" font-weight="600" fill="var(--sprout)">'+str(vals[-1])+'</text>'
+    for i in [0, len(dates)-1]:
+        x = pL+(pw*i/max(1,len(dates)-1))
+        s += '<text x="'+str(int(x))+'" y="'+str(H-6)+'" text-anchor="middle" font-size="7" fill="var(--clay)">'+dates[i][-5:]+'</text>'
+    s += '</svg>'
+    chart_html = s
+
+# Forecast — simple linear regression on last 14 days
+forecast_html = ''
+fcast_vals = [r['price'] for r in reversed(canola_hist[:14])]
+if len(fcast_vals) >= 7:
+    n = len(fcast_vals)
+    x_mean = (n-1)/2; y_mean = sum(fcast_vals)/n
+    num = sum((i-x_mean)*(y-y_mean) for i,y in enumerate(fcast_vals))
+    den = sum((i-x_mean)**2 for i in range(n))
+    slope = num/den if den else 0
+    intercept = y_mean - slope*x_mean
+    fcasts = [round(intercept+slope*(n+i),2) for i in range(7)]
+    fhtml = ''.join('<div style="display:flex;justify-content:space-between;padding:4px 8px;font-size:0.75rem;border-bottom:1px solid var(--line);"><span>Day +'+str(i+1)+'</span><span class="val mono">$'+str(f)+'</span></div>' for i,f in enumerate(fcasts))
+    trend = '↑' if slope>0 else '↓' if slope<0 else '→'
+    cls = 'com-up' if slope>0 else 'com-down' if slope<0 else ''
+    forecast_html = '<div style="margin-top:8px;font-size:0.625rem;color:var(--clay);margin-bottom:6px;">Linear regression on 14-day history <span class="'+cls+'">'+trend+'</span></div><div>'+fhtml+'</div>'
+
+DB.close()
+
+# === Build rows ===
+commodity_order = ['canola','wheat','durum','barley','oats','corn','soy','lentils','flax','peas']
+com_names = ['Canola','Wheat','Durum','Barley','Oats','Corn','Soy','Lentils','Flax','Peas']
+com_cards = ''.join('<div class="com-card"><div class="com-label">'+n+'</div><div class="com-price">'+T(coms.get(k))+'<span class="com-unit">/t</span></div></div>\n' for n,k in zip(com_names,commodity_order))
+
+fert_rows = ''.join('<tr><td>'+r['product']+'</td><td class="val">$'+T(r['price'])+'</td><td class="val"><span class="'+('com-up' if r['change'] and r['change']>0 else 'com-down' if r['change'] and r['change']<0 else '')+'">'+('+'+T(r['change']) if r['change'] else '—')+'</span></td><td>'+r['region']+'</td></tr>\n' for r in ferts)
+
+rail_rows = ''.join('<tr><td>'+r['origin']+' → '+r['destination']+'</td><td class="val">$'+T(r['rate'])+'</td><td class="val"><span class="'+('com-up' if r['change'] and r['change']>0 else 'com-down' if r['change'] and r['change']<0 else '')+'">'+('+'+T(r['change']) if r['change'] else '—')+'</span></td></tr>\n' for r in rails)
+
+port_rows = ''.join('<tr><td>'+r['port_name']+'</td><td class="val">'+T(int(r['volume_tonnes']) if r['volume_tonnes'] else '-')+' t</td><td>'+T(r['week_ending'])+'</td></tr>\n' for r in ports)
+
+basis_table = ''.join('<tr><td>'+r['region']+'</td><td class="val">$'+T(r['futures_price'])+'</td><td class="val">$'+T(r['cash_price'])+'</td><td class="val '+('com-up' if r['basis'] and r['basis']>-3 else 'com-down' if r['basis'] and r['basis']<-10 else '')+'">$'+T(r['basis'])+'</td></tr>\n' for r in basis_rows)
+
+gdd_table = ''.join('<tr><td>'+r['city']+'</td><td class="val">'+T(r['gdd'])+'</td><td class="val">'+T(r['normal_gdd'])+'</td><td class="val" style="color:var(--sprout);">+'+T(int(r['gdd']-r['normal_gdd']) if r['gdd'] and r['normal_gdd'] else '-')+' days</td></tr>\n' for r in gdds)
+
+fx_chg = fx['rate'] - 1.315 if fx else 0
+fx_cls = 'com-up' if fx_chg > 0 else 'com-down'
 
 CSS = """*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{--soil:#3E2C1C;--wheat:#F5E6D0;--straw:#C4A882;--clay:#8B6914;--field:#5C4033;--sprout:#4A7C3F;--amber:#E8A317;--rust:#B7410E;--line:#D4C4B0;--rad:8px}
+:root{--soil:#3E2C1C;--wheat:#F5E6D0;--straw:#C4A882;--clay:#8B6914;--sprout:#4A7C3F;--amber:#E8A317;--rust:#B7410E;--line:#D4C4B0;--rad:8px}
 body{background:var(--wheat);color:var(--soil);font-family:'Inter',-apple-system,sans-serif;font-size:0.875rem;line-height:1.5}
 *{font-variant-numeric:tabular-nums}
 .nums{font-family:'Barlow Condensed',sans-serif;font-weight:600}
@@ -89,96 +159,17 @@ td{padding:6px 8px;border-bottom:1px solid var(--line)}
 noindex = '<meta name="robots" content="noindex">' if STAGING else ''
 badge = '<div style="position:fixed;bottom:8px;right:8px;background:var(--amber);color:#fff;padding:4px 8px;border-radius:4px;font-size:0.625rem;font-weight:600;z-index:9999;">STAGING</div>' if STAGING else ''
 
-
-# === 30-day canola price chart (SVG) ===
-import csv as _csv
-from collections import OrderedDict as _OD
-
-def build_price_chart():
-    path = os.path.join(DATA_DIR, "history", "commodities.csv")
-    if not os.path.exists(path):
-        return '<div style="color:var(--clay);font-size:0.75rem;">History accumulating — chart will fill over time.</div>'
-    dates, vals = [], []
-    with open(path) as fh:
-        for row in _csv.DictReader(fh):
-            dates.append(row["t"][:10])
-            vals.append(float(row.get("canola",0)))
-    dates = dates[-30:]; vals = vals[-30:]
-    if len(vals) < 2:
-        return '<div style="color:var(--clay);font-size:0.75rem;">Need more data for chart.</div>'
-    mi, mx = min(vals), max(vals)
-    rng = mx - mi or 10
-    W, H = 600, 140
-    pL, pR, pT, pB = 40, 10, 10, 22
-    pw, ph = W-pL-pR, H-pT-pB
-    s = '<svg viewBox="0 0 '+str(W)+' '+str(H)+'" style="width:100%;height:auto;max-height:160px;">'
-    # Grid lines
-    for i in range(3):
-        y = pT + ph * (i/2)
-        s += '<line x1="'+str(pL)+'" y1="'+str(int(y))+'" x2="'+str(W-pR)+'" y2="'+str(int(y))+'" stroke="var(--line)" stroke-width="0.5"/>'
-    # Baseline
-    s += '<line x1="'+str(pL)+'" y1="'+str(H-pB)+'" x2="'+str(W-pR)+'" y2="'+str(H-pB)+'" stroke="var(--line)" stroke-width="1"/>'
-    # Price line
-    pts = []
-    for i, v in enumerate(vals):
-        x = pL + (pw * i / max(1, len(vals)-1))
-        y = pT + ph - ((v-mi)/rng * ph)
-        pts.append(str(int(x))+','+str(int(y)))
-    s += '<polyline points="'+' '.join(pts)+'" fill="none" stroke="var(--sprout)" stroke-width="2" stroke-linejoin="round"/>'
-    # Dots
-    for i, v in enumerate(vals):
-        x = pL + (pw * i / max(1, len(vals)-1))
-        y = pT + ph - ((v-mi)/rng * ph)
-        s += '<circle cx="'+str(int(x))+'" cy="'+str(int(y))+'" r="2.5" fill="var(--sprout)"/>'
-    # Last value label
-    s += '<text x="'+str(int(pL+pw))+'" y="'+str(int(pT+ph-((vals[-1]-mi)/rng*ph))-6)+'" text-anchor="end" font-size="10" font-weight="600" fill="var(--sprout)">'+str(vals[-1])+'</text>'
-    # Date labels
-    for i in [0, len(dates)-1]:
-        x = pL + (pw * i / max(1, len(dates)-1))
-        s += '<text x="'+str(int(x))+'" y="'+str(H-6)+'" text-anchor="middle" font-size="7" fill="var(--clay)">'+dates[i][-5:]+'</text>'
-    s += '</svg>'
-    return s
-
-# === 7-day forecast using linear regression ===
-def build_forecast():
-    path = os.path.join(DATA_DIR, "history", "commodities.csv")
-    if not os.path.exists(path):
-        return ""
-    vals = []
-    with open(path) as fh:
-        for row in _csv.DictReader(fh):
-            vals.append(float(row.get("canola",0)))
-    vals = vals[-14:]
-    if len(vals) < 7:
-        return ""
-    n = len(vals)
-    x_mean = (n-1)/2; y_mean = sum(vals)/n
-    num, den = 0, 0
-    for i, y in enumerate(vals):
-        num += (i-x_mean)*(y-y_mean)
-        den += (i-x_mean)**2
-    slope = num/den if den else 0
-    intercept = y_mean - slope*x_mean
-    fcast = [round(intercept + slope*(n+i), 2) for i in range(7)]
-    items = ''.join('<div style="display:flex;justify-content:space-between;padding:4px 8px;font-size:0.75rem;border-bottom:1px solid var(--line);"><span>Day +'+str(i+1)+'</span><span class="val mono">$'+str(f)+'</span></div>' for i,f in enumerate(fcast))
-    trend = '↑' if slope > 0 else '↓' if slope < 0 else '→'
-    cls = 'com-up' if slope > 0 else 'com-down' if slope < 0 else ''
-    return '<div style="margin-top:8px;font-size:0.625rem;color:var(--clay);margin-bottom:6px;">Linear regression on 14-day history <span class="'+cls+'">'+trend+'</span></div><div>'+items+'</div>'
-
-_price_chart = build_price_chart()
-_forecast = build_forecast()
-
 html = """<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 """+noindex+"""
-<title>Field Data — Ag Market Dashboard | Grain, FX, Fertilizer, Rail, Ports</title>
-<meta name="description" content="Free live dashboard for Canadian agriculture. Grain prices, fertilizer index, rail rates, port volumes, weather. No signup.">
+<title>Field Data — Ag Market Dashboard | SQLite-Backed</title>
+<meta name="description" content="Free live dashboard for Canadian agriculture. Grain prices, fertilizer, FX, rail, ports. 90-day history. SQLite-backed.">
 <link rel="canonical" href="https://fielddata.co/">
 <meta property="og:title" content="Field Data — Ag Market Dashboard">
-<meta property="og:description" content="Grain, fertilizer, FX, rail. Free. Always.">
+<meta property="og:description" content="Grain, fertilizer, FX, rail. 90-day history. Free. Always.">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600&family=IBM+Plex+Mono:wght@400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -191,25 +182,25 @@ html = """<!DOCTYPE html>
 <nav><a href="#">Home</a><a href="#">About</a><a href="#">Blog</a></nav>
 
 <div class="main">
-  <div style="text-align:center;padding:8px 18px;margin-bottom:18px;font-size:0.875rem;color:var(--clay);">Live grain, fertilizer, FX, rail & port data. Free. Always.</div>
+  <div style="text-align:center;padding:8px 18px;margin-bottom:18px;font-size:0.875rem;color:var(--clay);">Live grain, fertilizer, FX, rail & port data. 90-day history. SQLite-backed. Free.</div>
 
   <div class="grid">
     <div class="module hero">
       <div class="eyebrow"><span class="eyebrow-label">Commodity Prices</span><span class="pill pill-live">Live</span></div>
       <div class="com-grid">"""+com_cards+"""</div>
-      <div class="card-footer">Updated """+commodities.get('updated','-')[:16]+""" &middot; ICE / CME</div>
+      <div class="card-footer">ICE / CME &middot; """+now_iso[:16]+"""</div>
     </div>
 
     <div class="module wide">
       <div class="eyebrow"><span class="eyebrow-label">Fertilizer Index</span><span class="pill pill-live">Weekly</span></div>
       <table><tr><th>Product</th><th class="val">Price</th><th class="val">Change</th><th>Region</th></tr>"""+fert_rows+"""</table>
-      <div class="card-footer">"""+fertilizer.get('updated','-')[:16]+""" &middot; USDA / StatsCan</div>
+      <div class="card-footer">USDA / StatsCan &middot; """+now_iso[:16]+"""</div>
     </div>
 
     <div class="module standard">
       <div class="eyebrow"><span class="eyebrow-label">Farm Diesel</span><span class="pill pill-live">Daily</span></div>
-      <div style="font-size:2rem;font-weight:600;" class="nums">"""+T(fuel_p)+"""<span style="font-size:0.875rem;color:var(--clay);"> &cent;/L</span></div>
-      <div style="font-size:0.75rem;color:var(--clay);">Alberta avg &middot; Cross-linked with NMM</div>
+      <div style="font-size:2rem;font-weight:600;" class="nums">"""+T(fuel.get('AB'))+"""<span style="font-size:0.875rem;color:var(--clay);"> &cent;/L</span></div>
+      <div style="font-size:0.75rem;color:var(--clay);">Alberta avg</div>
       <div class="card-footer">Public surveys</div>
     </div>
 
@@ -217,46 +208,46 @@ html = """<!DOCTYPE html>
       <div class="eyebrow"><span class="eyebrow-label">CAD / USD</span><span class="pill pill-live">Live</span></div>
       <div style="display:flex;align-items:baseline;gap:10px;">
         <span style="font-size:2.5rem;font-weight:600;">"""+T(fx_rate)+"""</span>
-        <span style="font-size:0.875rem;" class=\""""+fx_cls+"""\">"""+fx_chg+"""</span>
+        <span style="font-size:0.875rem;" class=\""""+fx_cls+"""\">"""+('+' if fx_chg>0 else '')+T(round(fx_chg,4))+"""</span>
       </div>
-      <div style="font-size:0.75rem;color:var(--clay);margin-top:4px;">H: """+T(exchange.get('day_high','-'))+""" &middot; L: """+T(exchange.get('day_low','-'))+"""</div>
-      <div class="card-footer">Bank of Canada &middot; """+exchange.get('updated','-')[:16]+"""</div>
+      <div style="font-size:0.75rem;color:var(--clay);margin-top:4px;">H: """+T(fx_hi)+""" &middot; L: """+T(fx_lo)+"""</div>
+      <div class="card-footer">Bank of Canada &middot; """+T(fx_ts)[:16]+"""</div>
     </div>
 
     <div class="module standard">
       <div class="eyebrow"><span class="eyebrow-label">Canola Basis</span><span class="pill pill-live">Daily</span></div>
-      <table><tr><th>Region</th><th class="val">Futures</th><th class="val">Cash</th><th class="val">Basis</th></tr>"""+basis_rows+"""</table>
-      <div class="card-footer">"""+basis.get('updated','-')[:16]+""" &middot; Futures minus cash</div>
+      <table><tr><th>Region</th><th class="val">Futures</th><th class="val">Cash</th><th class="val">Basis</th></tr>"""+basis_table+"""</table>
+      <div class="card-footer">Futures minus cash &middot; Today</div>
     </div>
 
     <div class="module hero">
-      <div class="eyebrow"><span class="eyebrow-label">Canola Price History — 30 Days</span><span class="pill pill-live">Daily</span></div>
-      """+_price_chart+"""
-      <div class="card-footer">From history archive &middot; Updated every 30 minutes</div>
+      <div class="eyebrow"><span class="eyebrow-label">Canola — 30 Day Price History</span><span class="pill pill-live">Daily</span></div>
+      """+chart_html+"""
+      <div class="card-footer">From SQLite history archive</div>
     </div>
 
     <div class="module standard">
-      <div class="eyebrow"><span class="eyebrow-label">Canola Forecast — 7 Days</span><span class="pill pill-live">Model</span></div>
-      """+_forecast+"""
-      <div class="card-footer">Statistical projection &middot; Informational only</div>
+      <div class="eyebrow"><span class="eyebrow-label">Canola — 7 Day Forecast</span><span class="pill pill-live">Model</span></div>
+      """+forecast_html+"""
+      <div class="card-footer">Linear regression &middot; Informational only</div>
     </div>
 
     <div class="module wide">
       <div class="eyebrow"><span class="eyebrow-label">Growing Degree Days</span><span class="pill pill-live">Daily</span></div>
-      <table><tr><th>City</th><th class="val">GDD</th><th class="val">Normal</th><th class="val">Ahead</th></tr>"""+gdd_rows+"""</table>
-      <div class="card-footer">"""+gdd.get('updated','-')[:16]+""" &middot; Base 5°C &middot; Open-Meteo</div>
+      <table><tr><th>City</th><th class="val">GDD</th><th class="val">Normal</th><th class="val">Ahead</th></tr>"""+gdd_table+"""</table>
+      <div class="card-footer">Open-Meteo &middot; Today</div>
     </div>
 
     <div class="module wide">
       <div class="eyebrow"><span class="eyebrow-label">Rail Freight</span><span class="pill pill-live">Weekly</span></div>
       <table><tr><th>Route</th><th class="val">Rate/t</th><th class="val">Change</th></tr>"""+rail_rows+"""</table>
-      <div class="card-footer">Ag Transport Coalition &middot; """+rail.get('updated','-')[:16]+"""</div>
+      <div class="card-footer">Ag Transport Coalition</div>
     </div>
 
     <div class="module standard">
       <div class="eyebrow"><span class="eyebrow-label">Grain Ports</span><span class="pill pill-live">Weekly</span></div>
-      <table><tr><th>Port</th><th class="val">Volume</th><th class="val">Trend</th></tr>"""+port_rows+"""</table>
-      <div class="card-footer">Port authorities &middot; """+port.get('updated','-')[:16]+"""</div>
+      <table><tr><th>Port</th><th class="val">Volume</th><th class="val">Week</th></tr>"""+port_rows+"""</table>
+      <div class="card-footer">Port authorities</div>
     </div>
   </div>
 </div>
@@ -268,7 +259,7 @@ html = """<!DOCTYPE html>
 </div>
 
 <footer style="padding:16px 24px;text-align:center;font-size:0.625rem;color:var(--clay);border-top:1px solid var(--line);font-family:'IBM Plex Mono',monospace;">
-  &copy; 2026 Field Data &middot; Data from public sources &middot; Informational use only
+  &copy; 2026 Field Data &middot; SQLite-backed &middot; Data from public sources &middot; Informational use only
 </footer>
 </body>
 </html>"""
