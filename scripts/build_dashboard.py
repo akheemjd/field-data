@@ -89,6 +89,85 @@ td{padding:6px 8px;border-bottom:1px solid var(--line)}
 noindex = '<meta name="robots" content="noindex">' if STAGING else ''
 badge = '<div style="position:fixed;bottom:8px;right:8px;background:var(--amber);color:#fff;padding:4px 8px;border-radius:4px;font-size:0.625rem;font-weight:600;z-index:9999;">STAGING</div>' if STAGING else ''
 
+
+# === 30-day canola price chart (SVG) ===
+import csv as _csv
+from collections import OrderedDict as _OD
+
+def build_price_chart():
+    path = os.path.join(DATA_DIR, "history", "commodities.csv")
+    if not os.path.exists(path):
+        return '<div style="color:var(--clay);font-size:0.75rem;">History accumulating — chart will fill over time.</div>'
+    dates, vals = [], []
+    with open(path) as fh:
+        for row in _csv.DictReader(fh):
+            dates.append(row["t"][:10])
+            vals.append(float(row.get("canola",0)))
+    dates = dates[-30:]; vals = vals[-30:]
+    if len(vals) < 2:
+        return '<div style="color:var(--clay);font-size:0.75rem;">Need more data for chart.</div>'
+    mi, mx = min(vals), max(vals)
+    rng = mx - mi or 10
+    W, H = 600, 140
+    pL, pR, pT, pB = 40, 10, 10, 22
+    pw, ph = W-pL-pR, H-pT-pB
+    s = '<svg viewBox="0 0 '+str(W)+' '+str(H)+'" style="width:100%;height:auto;max-height:160px;">'
+    # Grid lines
+    for i in range(3):
+        y = pT + ph * (i/2)
+        s += '<line x1="'+str(pL)+'" y1="'+str(int(y))+'" x2="'+str(W-pR)+'" y2="'+str(int(y))+'" stroke="var(--line)" stroke-width="0.5"/>'
+    # Baseline
+    s += '<line x1="'+str(pL)+'" y1="'+str(H-pB)+'" x2="'+str(W-pR)+'" y2="'+str(H-pB)+'" stroke="var(--line)" stroke-width="1"/>'
+    # Price line
+    pts = []
+    for i, v in enumerate(vals):
+        x = pL + (pw * i / max(1, len(vals)-1))
+        y = pT + ph - ((v-mi)/rng * ph)
+        pts.append(str(int(x))+','+str(int(y)))
+    s += '<polyline points="'+' '.join(pts)+'" fill="none" stroke="var(--sprout)" stroke-width="2" stroke-linejoin="round"/>'
+    # Dots
+    for i, v in enumerate(vals):
+        x = pL + (pw * i / max(1, len(vals)-1))
+        y = pT + ph - ((v-mi)/rng * ph)
+        s += '<circle cx="'+str(int(x))+'" cy="'+str(int(y))+'" r="2.5" fill="var(--sprout)"/>'
+    # Last value label
+    s += '<text x="'+str(int(pL+pw))+'" y="'+str(int(pT+ph-((vals[-1]-mi)/rng*ph))-6)+'" text-anchor="end" font-size="10" font-weight="600" fill="var(--sprout)">'+str(vals[-1])+'</text>'
+    # Date labels
+    for i in [0, len(dates)-1]:
+        x = pL + (pw * i / max(1, len(dates)-1))
+        s += '<text x="'+str(int(x))+'" y="'+str(H-6)+'" text-anchor="middle" font-size="7" fill="var(--clay)">'+dates[i][-5:]+'</text>'
+    s += '</svg>'
+    return s
+
+# === 7-day forecast using linear regression ===
+def build_forecast():
+    path = os.path.join(DATA_DIR, "history", "commodities.csv")
+    if not os.path.exists(path):
+        return ""
+    vals = []
+    with open(path) as fh:
+        for row in _csv.DictReader(fh):
+            vals.append(float(row.get("canola",0)))
+    vals = vals[-14:]
+    if len(vals) < 7:
+        return ""
+    n = len(vals)
+    x_mean = (n-1)/2; y_mean = sum(vals)/n
+    num, den = 0, 0
+    for i, y in enumerate(vals):
+        num += (i-x_mean)*(y-y_mean)
+        den += (i-x_mean)**2
+    slope = num/den if den else 0
+    intercept = y_mean - slope*x_mean
+    fcast = [round(intercept + slope*(n+i), 2) for i in range(7)]
+    items = ''.join('<div style="display:flex;justify-content:space-between;padding:4px 8px;font-size:0.75rem;border-bottom:1px solid var(--line);"><span>Day +'+str(i+1)+'</span><span class="val mono">$'+str(f)+'</span></div>' for i,f in enumerate(fcast))
+    trend = '↑' if slope > 0 else '↓' if slope < 0 else '→'
+    cls = 'com-up' if slope > 0 else 'com-down' if slope < 0 else ''
+    return '<div style="margin-top:8px;font-size:0.625rem;color:var(--clay);margin-bottom:6px;">Linear regression on 14-day history <span class="'+cls+'">'+trend+'</span></div><div>'+items+'</div>'
+
+_price_chart = build_price_chart()
+_forecast = build_forecast()
+
 html = """<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -148,6 +227,18 @@ html = """<!DOCTYPE html>
       <div class="eyebrow"><span class="eyebrow-label">Canola Basis</span><span class="pill pill-live">Daily</span></div>
       <table><tr><th>Region</th><th class="val">Futures</th><th class="val">Cash</th><th class="val">Basis</th></tr>"""+basis_rows+"""</table>
       <div class="card-footer">"""+basis.get('updated','-')[:16]+""" &middot; Futures minus cash</div>
+    </div>
+
+    <div class="module hero">
+      <div class="eyebrow"><span class="eyebrow-label">Canola Price History — 30 Days</span><span class="pill pill-live">Daily</span></div>
+      """+_price_chart+"""
+      <div class="card-footer">From history archive &middot; Updated every 30 minutes</div>
+    </div>
+
+    <div class="module standard">
+      <div class="eyebrow"><span class="eyebrow-label">Canola Forecast — 7 Days</span><span class="pill pill-live">Model</span></div>
+      """+_forecast+"""
+      <div class="card-footer">Statistical projection &middot; Informational only</div>
     </div>
 
     <div class="module wide">
