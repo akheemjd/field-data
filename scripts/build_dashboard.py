@@ -270,11 +270,7 @@ html = """<!DOCTYPE html>
       <div class="card-footer">Closing prices, Canadian dollars per tonne</div>
     </div>
 
-    <div class="module standard">
-      <div class="eyebrow"><span class="eyebrow-label">Where Canola Is Headed</span></div>
-      """+forecast_html+"""
-      <div class="card-footer">Statistical estimate &middot; Not financial advice &middot; Markets change</div>
-    </div>
+
 
     <div class="module wide">
       <div class="eyebrow"><span class="eyebrow-label">How the Crop Is Growing</span></div>
