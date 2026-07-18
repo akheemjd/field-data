@@ -96,8 +96,12 @@ if len(canola_hist) >= 2:
         y = int(pT+ph-((v-mi)/rng*ph))
         dots += f' {x},{y}'
     s += f'<polyline points="{dots.strip()}" fill="var(--sprout)" fill-opacity="0.08" stroke="var(--sprout)" stroke-width="2.5" stroke-linejoin="round"/>'
-    last_x = int(pL+pw)
-    last_y = int(pT+ph-((vals[-1]-mi)/rng*ph))
+    for i,v in enumerate(vals):
+        if i%3==0 or i==len(vals)-1:
+            x=int(pL+pw*i/max(1,len(vals)-1))
+            y=int(pT+ph-((v-mi)/rng*ph))
+            s+='<circle cx="'+str(x)+'" cy="'+str(y)+'" r="3" fill="var(--sprout)"/>'
+    
     s += f'<text x="{last_x+2}" y="{last_y}" font-size="11" font-weight="700" fill="var(--sprout)">${vals[-1]:.2f}</text>'
     for i in [0, len(dates)-1]:
         x = int(pL+pw*i/max(1,len(dates)-1))
