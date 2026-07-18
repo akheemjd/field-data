@@ -102,6 +102,7 @@ if len(canola_hist) >= 2:
             y=int(pT+ph-((v-mi)/rng*ph))
             s+='<circle cx="'+str(x)+'" cy="'+str(y)+'" r="3" fill="var(--sprout)"/>'
     
+    last_x = int(pL+pw); last_y = int(pT+ph-((vals[-1]-mi)/rng*ph))
     s += f'<text x="{last_x+2}" y="{last_y}" font-size="11" font-weight="700" fill="var(--sprout)">${vals[-1]:.2f}</text>'
     for i in [0, len(dates)-1]:
         x = int(pL+pw*i/max(1,len(dates)-1))
