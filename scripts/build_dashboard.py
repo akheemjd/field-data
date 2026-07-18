@@ -184,7 +184,7 @@ nav a:hover{border-color:var(--soil);color:var(--soil)}
 .main{max-width:1200px;margin:0 auto;padding:20px 20px 40px}
 .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}
 .module{background:#FFF8F0;border:1px solid var(--line);border-radius:var(--rad);padding:16px;box-shadow:0 1px 3px rgba(0,0,0,.02)}
-.module.hero{grid-column:span 12}.module.wide{grid-column:span 7}.module.standard{grid-column:span 5}
+.module.hero{grid-column:span 12}.module.wide{grid-column:span 8}.module.standard{grid-column:span 4}
 .eyebrow{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
 .eyebrow-label{font-size:0.6875rem;color:var(--soil);font-weight:600}
 .pill{font-size:0.5625rem;padding:2px 8px;border-radius:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em}
@@ -232,44 +232,15 @@ html = """<!DOCTYPE html>
   <div style="text-align:center;padding:6px 18px;margin-bottom:18px;font-size:0.9375rem;color:var(--clay);">Canadian grain markets &middot; Updated live</div>
 
   <div class="grid">
-    <div class="module hero">
+ <div class="module hero">
       <div class="eyebrow"><span class="eyebrow-label">Grain Prices</span><span class="pill pill-live">Today</span></div>
       <div class="com-grid">"""+com_cards+"""</div>
       <div class="card-footer">Prices in Canadian dollars per tonne &middot; """+now_iso+"""</div>
     </div>
 
-    <div class="module wide">
-      <div class="eyebrow"><span class="eyebrow-label">Fertilizer</span></div>
-      <table><tr><th>Product</th><th class="val">Price</th><th class="val">Change</th></tr>"""+fert_rows+"""</table>
-      <div class="card-footer">Prairie farm supply prices &middot; """+now_iso+"""</div>
-    </div>
+    
 
-    <div class="module standard">
-      <div class="eyebrow"><span class="eyebrow-label">Diesel</span></div>
-      <div style="font-size:2.25rem;font-weight:600;line-height:1;" class="nums">"""+T(fuel_p)+"""<span style="font-size:1rem;color:var(--clay);"> ¢/L</span></div>
-      <div style="font-size:0.875rem;color:var(--clay);margin-top:4px;">Alberta farm price</div>
-      <div style="margin-top:12px;font-size:0.8125rem;color:var(--soil);"><div style="font-size:0.8125rem;color:var(--clay);margin-top:4px;">Alberta rack price. Provincial rates vary.</div>
-      <div class="card-footer">""" + now_iso + """</div>
-    </div>
-
-    <div class="module wide">
-      <div class="eyebrow"><span class="eyebrow-label">CAD / USD</span></div>
-      <div style="display:flex;align-items:baseline;gap:10px;">
-        <span style="font-size:2.25rem;font-weight:600;">"""+T(fx_rate)+"""</span>
-        <span style="font-size:0.9375rem;" class=\""""+fx_cls+"""\">"""+fx_dir+""" """+T(abs(fx_chg),4)+"""</span>
-      </div>
-      <div style="font-size:0.875rem;color:var(--clay);margin-top:4px;">Cross-border grain sales and input costs.</div>
-      <div class="card-footer">Bank of Canada &middot; """+now_iso+"""</div>
-    </div>
-
-    <div class="module standard">
-      <div class="eyebrow"><span class="eyebrow-label">Canola Basis</span></div>
-      
-      <table><tr><th>Region</th><th class="val">Futures</th><th class="val">Cash</th><th class="val">Basis</th></tr>"""+basis_rows+"""</table>
-      <div class="card-footer">Futures minus cash &middot; Canola</div>
-    </div>
-
-    <div class="module hero">
+<div class="module hero">
       <div class="eyebrow"><span class="eyebrow-label">Canola Price History</span></div>
       """+chart_html+"""
       <div class="card-footer">Closing prices, Canadian dollars per tonne</div>
@@ -277,26 +248,61 @@ html = """<!DOCTYPE html>
 
 
 
-    <div class="module wide">
+    
+
+<div class="module wide">
+      <div class="eyebrow"><span class="eyebrow-label">Fertilizer</span></div>
+      <table><tr><th>Product</th><th class="val">Price</th><th class="val">Change</th></tr>"""+fert_rows+"""</table>
+      <div class="card-footer">Prairie farm supply prices &middot; """+now_iso+"""</div>
+    </div>
+
+    
+
+<div class="module standard">
+      <div class="eyebrow"><span class="eyebrow-label">Diesel</span></div>
+      <div style="font-size:2.25rem;font-weight:600;line-height:1;" class="nums">"""+T(fuel_p)+"""<span style="font-size:1rem;color:var(--clay);"> ¢/L</span></div>
+      <div style="font-size:0.875rem;color:var(--clay);margin-top:4px;">Alberta farm price</div>
+      <div style="margin-top:12px;font-size:0.8125rem;color:var(--soil);"><div style="font-size:0.8125rem;color:var(--clay);margin-top:4px;">Alberta rack price. Provincial rates vary.</div>
+      <div class="card-footer">""" + now_iso + """</div>
+    </div>
+
+    
+
+<div class="module wide">
+      <div class="eyebrow"><span class="eyebrow-label">Grain Freight</span></div>
+      <table><tr><th>Route</th><th class="val">Rate</th><th class="val">Change</th></tr>"""+rail_rows+"""</table>
+      <div class="card-footer">Grain rates per tonne &middot; """+now_iso+"""</div>
+    </div>
+
+    
+
+<div class="module standard">
+      <div class="eyebrow"><span class="eyebrow-label">Canola Basis</span></div>
+      
+      <table><tr><th>Region</th><th class="val">Futures</th><th class="val">Cash</th><th class="val">Basis</th></tr>"""+basis_rows+"""</table>
+      <div class="card-footer">Futures minus cash &middot; Canola</div>
+    </div>
+
+    
+
+<div class="module wide">
       <div class="eyebrow"><span class="eyebrow-label">Crop Development</span></div>
       
       <table><tr><th>City</th><th class="val">This Year</th><th class="val">Normal</th><th class="val">Progress</th></tr>"""+gdd_rows+"""</table>
       <div class="card-footer">Base 5°C &middot; """+now_iso+"""</div>
     </div>
 
-    <div class="module wide">
-      <div class="eyebrow"><span class="eyebrow-label">Grain Freight</span></div>
-      <table><tr><th>Route</th><th class="val">Rate</th><th class="val">Change</th></tr>"""+rail_rows+"""</table>
-      <div class="card-footer">Grain rates per tonne &middot; """+now_iso+"""</div>
-    </div>
+    
 
-    <div class="module standard">
+<div class="module standard">
       <div class="eyebrow"><span class="eyebrow-label">Export Volumes</span></div>
       <table><tr><th>Port</th><th class="val">Volume</th><th class="val">Week</th></tr>"""+port_rows+"""</table>
       <div class="card-footer">Weekly grain shipments</div>
     </div>
   </div>
-</div>
+
+
+</div></div>
 
 <div style="text-align:center;max-width:480px;margin:32px auto 0;padding:28px;background:#FFF8F0;border:1px solid var(--line);border-radius:var(--rad);">
   <div style="font-size:0.75rem;color:var(--clay);margin-bottom:10px;">📬 Forward this to another farmer</div>
