@@ -46,12 +46,12 @@ com_cards = ''
 for key, name, desc in com_info:
     price = coms.get(key)
     val = f"${price:,.2f}" if isinstance(price,(int,float)) else '—'
-    com_cards += f'<div class="com-card"><div class="com-label">{name}</div><div class="com-price">{val}</div><div class="com-desc">{desc}</div></div>\n'
+    com_cards += '<div class="com-card"><div class="com-label">'+name+'</div><div class="com-sub">'+desc+'</div><div class="com-price">'+str(val)+'</div></div>\n'
 
 # === Fertilizer ===
 ferts = DB.execute("SELECT product, region, price, (price - LAG(price) OVER (PARTITION BY product, region ORDER BY timestamp)) as change FROM (SELECT product, region, price, timestamp, ROW_NUMBER() OVER (PARTITION BY product, region ORDER BY timestamp DESC) rn FROM fertilizer_prices) WHERE rn<=1").fetchall()
 
-fert_names = {'Urea':'Nitrogen (Urea)','Potash':'Potash','DAP':'Phosphate (DAP)','MAP':'Starter (MAP)','Anhydrous':'Anhydrous Ammonia'}
+fert_names = {'Urea':'Urea 46-0-0','Potash':'Potash 0-0-60','DAP':'DAP 18-46-0','MAP':'MAP 11-52-0','Anhydrous':'NH3 82-0-0'}
 fert_rows = ''
 for r in ferts:
     name = fert_names.get(r['product'], r['product'])
@@ -131,11 +131,10 @@ basis_data = DB.execute("SELECT region, futures_price, cash_price, basis FROM (S
 basis_rows = ''
 for r in basis_data:
     b = r['basis'] if r['basis'] is not None else 0
-    if b > -3: note, cls = "Tight — good price", "com-up"
-    elif b > -8: note, cls = "Average", ""
-    elif b > -15: note, cls = "Wide — shop around", "com-down"
-    else: note, cls = "Very wide — check other elevators", "com-down"
-    basis_rows += '<tr><td>'+r['region']+'</td><td class="val">$'+'{:,.2f}'.format(r['futures_price'])+'</td><td class="val">$'+'{:,.2f}'.format(r['cash_price'])+'</td><td class="val '+cls+'">'+note+'</td></tr>\n'
+    if b > -5: cls = 'com-up'
+    elif b > -12: cls = ''
+    else: cls = 'com-down'
+    basis_rows += '<tr><td>'+r['region']+'</td><td class="val">$'+'{:,.2f}'.format(r['futures_price'])+'</td><td class="val">$'+'{:,.2f}'.format(r['cash_price'])+'</td><td class="val '+cls+'">-$'+'{:,.2f}'.format(abs(b))+'</td></tr>\n'
 
 # === GDD ===
 gdds = DB.execute("SELECT city, gdd, normal_gdd FROM (SELECT city, gdd, normal_gdd, ROW_NUMBER() OVER (PARTITION BY city ORDER BY date DESC) rn FROM gdd_data) WHERE rn<=1").fetchall()
@@ -188,9 +187,9 @@ nav a:hover{border-color:var(--soil);color:var(--soil)}
 .card-footer{margin-top:10px;padding-top:6px;border-top:1px solid var(--line);font-size:0.625rem;color:var(--clay);font-family:'IBM Plex Mono',monospace}
 .com-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
 .com-card{background:var(--soil);color:var(--wheat);padding:16px;border-radius:6px}
-.com-label{font-size:0.8125rem;font-weight:600;margin-bottom:2px}
+.com-label{font-size:0.8125rem;font-weight:600}.com-sub{font-size:0.5625rem;color:var(--straw);text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px}
 .com-price{font-size:1.5rem;line-height:1.15;font-family:'Barlow Condensed',sans-serif}
-.com-desc{font-size:0.625rem;opacity:.65;margin-top:6px;line-height:1.3}
+
 .com-up{color:var(--sprout)}.com-down{color:var(--rust)}
 table{width:100%;border-collapse:collapse;font-size:0.8125rem}
 th{text-align:left;padding:6px 10px;border-bottom:2px solid var(--line);font-size:0.625rem;text-transform:uppercase;letter-spacing:.06em;color:var(--clay);font-weight:600}
@@ -225,7 +224,7 @@ html = """<!DOCTYPE html>
 <nav><a href="#">Today's Prices</a><a href="#">Weekly Report</a><a href="#">About</a></nav>
 
 <div class="main">
-  <div style="text-align:center;padding:6px 18px;margin-bottom:18px;font-size:0.9375rem;color:var(--soil);font-weight:500;">What the market is paying today. For farmers, by the numbers.</div>
+  <div style="text-align:center;padding:6px 18px;margin-bottom:18px;font-size:0.9375rem;color:var(--clay);">Canadian grain markets &middot; Updated live</div>
 
   <div class="grid">
     <div class="module hero">
@@ -235,38 +234,38 @@ html = """<!DOCTYPE html>
     </div>
 
     <div class="module wide">
-      <div class="eyebrow"><span class="eyebrow-label">What Fertilizer Costs Right Now</span></div>
+      <div class="eyebrow"><span class="eyebrow-label">Fertilizer</span></div>
       <table><tr><th>Product</th><th class="val">Price</th><th class="val">Change</th></tr>"""+fert_rows+"""</table>
       <div class="card-footer">Prairie farm supply prices &middot; """+now_iso+"""</div>
     </div>
 
     <div class="module standard">
-      <div class="eyebrow"><span class="eyebrow-label">Farm Diesel</span></div>
+      <div class="eyebrow"><span class="eyebrow-label">Diesel</span></div>
       <div style="font-size:2.25rem;font-weight:600;line-height:1;" class="nums">"""+T(fuel_p)+"""<span style="font-size:1rem;color:var(--clay);"> ¢/L</span></div>
       <div style="font-size:0.875rem;color:var(--clay);margin-top:4px;">Alberta farm price</div>
-      <div style="margin-top:12px;font-size:0.8125rem;color:var(--soil);">At 35 L/100km, a 1,000-hectare farm burns about $""" + f"{fuel_p * 0.35:.0f}" + """/hour during seeding or harvest.</div>
+      <div style="margin-top:12px;font-size:0.8125rem;color:var(--soil);"><div style="font-size:0.8125rem;color:var(--clay);margin-top:4px;">Alberta rack price. Provincial rates vary.</div>
       <div class="card-footer">""" + now_iso + """</div>
     </div>
 
     <div class="module wide">
-      <div class="eyebrow"><span class="eyebrow-label">Canadian Dollar</span></div>
+      <div class="eyebrow"><span class="eyebrow-label">CAD / USD</span></div>
       <div style="display:flex;align-items:baseline;gap:10px;">
         <span style="font-size:2.25rem;font-weight:600;">"""+T(fx_rate)+"""</span>
         <span style="font-size:0.9375rem;" class=\""""+fx_cls+"""\">"""+fx_dir+""" """+T(abs(fx_chg),4)+"""</span>
       </div>
-      <div style="font-size:0.875rem;color:var(--clay);margin-top:4px;">When the loonie is weak, grain exports are worth more. When it's strong, your inputs cost less.</div>
+      <div style="font-size:0.875rem;color:var(--clay);margin-top:4px;">Cross-border grain sales and input costs.</div>
       <div class="card-footer">Bank of Canada &middot; """+now_iso+"""</div>
     </div>
 
     <div class="module standard">
-      <div class="eyebrow"><span class="eyebrow-label">Basis by Region</span></div>
-      <div style="font-size:0.8125rem;color:var(--clay);margin-bottom:8px;">The gap between futures and what your local elevator pays.</div>
+      <div class="eyebrow"><span class="eyebrow-label">Canola Basis</span></div>
+      
       <table><tr><th>Region</th><th class="val">Futures</th><th class="val">Cash</th><th class="val">Basis</th></tr>"""+basis_rows+"""</table>
-      <div class="card-footer">Closer to zero = better local price</div>
+      <div class="card-footer">Futures minus cash &middot; Canola</div>
     </div>
 
     <div class="module hero">
-      <div class="eyebrow"><span class="eyebrow-label">Canola — Last 30 Days</span></div>
+      <div class="eyebrow"><span class="eyebrow-label">Canola Price History</span></div>
       """+chart_html+"""
       <div class="card-footer">Closing prices, Canadian dollars per tonne</div>
     </div>
@@ -274,20 +273,20 @@ html = """<!DOCTYPE html>
 
 
     <div class="module wide">
-      <div class="eyebrow"><span class="eyebrow-label">How the Crop Is Growing</span></div>
-      <div style="font-size:0.8125rem;color:var(--clay);margin-bottom:8px;">Growing degree days compared to normal. More heat = faster development.</div>
+      <div class="eyebrow"><span class="eyebrow-label">Crop Development</span></div>
+      
       <table><tr><th>City</th><th class="val">This Year</th><th class="val">Normal</th><th class="val">Progress</th></tr>"""+gdd_rows+"""</table>
       <div class="card-footer">Base 5°C &middot; """+now_iso+"""</div>
     </div>
 
     <div class="module wide">
-      <div class="eyebrow"><span class="eyebrow-label">Rail Freight Rates</span></div>
+      <div class="eyebrow"><span class="eyebrow-label">Grain Freight</span></div>
       <table><tr><th>Route</th><th class="val">Rate</th><th class="val">Change</th></tr>"""+rail_rows+"""</table>
       <div class="card-footer">Grain rates per tonne &middot; """+now_iso+"""</div>
     </div>
 
     <div class="module standard">
-      <div class="eyebrow"><span class="eyebrow-label">Grain Moving Through Ports</span></div>
+      <div class="eyebrow"><span class="eyebrow-label">Export Volumes</span></div>
       <table><tr><th>Port</th><th class="val">Volume</th><th class="val">Week</th></tr>"""+port_rows+"""</table>
       <div class="card-footer">Weekly grain shipments</div>
     </div>
@@ -301,7 +300,7 @@ html = """<!DOCTYPE html>
 </div>
 
 <footer style="padding:16px 24px;text-align:center;font-size:0.625rem;color:var(--clay);border-top:1px solid var(--line);font-family:'IBM Plex Mono',monospace;">
-  Field Data &middot; Free for Canadian farmers &middot; Prices from public markets
+  Field Data &middot; Market data for Canadian agriculture &middot; Prices from public exchanges
 </footer>
 </body>
 </html>"""

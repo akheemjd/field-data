@@ -36,9 +36,9 @@ nav a:hover{border-color:var(--soil);color:var(--soil)}
 .card-footer{margin-top:10px;padding-top:6px;border-top:1px solid var(--line);font-size:0.625rem;color:var(--clay);font-family:'IBM Plex Mono',monospace}
 .com-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
 .com-card{background:var(--soil);color:var(--wheat);padding:16px;border-radius:6px}
-.com-label{font-size:0.8125rem;font-weight:600;margin-bottom:2px}
+.com-label{font-size:0.8125rem;font-weight:600}.com-sub{font-size:0.5625rem;color:var(--straw);text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px}
 .com-price{font-size:1.5rem;line-height:1.15;font-family:'Barlow Condensed',sans-serif}
-.com-desc{font-size:0.625rem;opacity:.65;margin-top:6px;line-height:1.3}
+
 .com-up{color:var(--sprout)}.com-down{color:var(--rust)}
 table{width:100%;border-collapse:collapse;font-size:0.8125rem}
 th{text-align:left;padding:6px 10px;border-bottom:2px solid var(--line);font-size:0.625rem;text-transform:uppercase;letter-spacing:.06em;color:var(--clay);font-weight:600}
@@ -54,69 +54,69 @@ td{padding:7px 10px;border-bottom:1px solid var(--line)}
 <nav><a href="#">Today's Prices</a><a href="#">Weekly Report</a><a href="#">About</a></nav>
 
 <div class="main">
-  <div style="text-align:center;padding:6px 18px;margin-bottom:18px;font-size:0.9375rem;color:var(--soil);font-weight:500;">What the market is paying today. For farmers, by the numbers.</div>
+  <div style="text-align:center;padding:6px 18px;margin-bottom:18px;font-size:0.9375rem;color:var(--clay);">Canadian grain markets &middot; Updated live</div>
 
   <div class="grid">
     <div class="module hero">
       <div class="eyebrow"><span class="eyebrow-label">Grain Prices</span><span class="pill pill-live">Today</span></div>
-      <div class="com-grid"><div class="com-card"><div class="com-label">Canola</div><div class="com-price">$619.52</div><div class="com-desc">Canada's biggest crop. Used for cooking oil and biodiesel.</div></div>
-<div class="com-card"><div class="com-label">Wheat</div><div class="com-price">$288.08</div><div class="com-desc">Milling wheat. Bread, pasta, export markets.</div></div>
-<div class="com-card"><div class="com-label">Durum</div><div class="com-price">$309.38</div><div class="com-desc">Premium wheat for pasta. Mostly exported.</div></div>
-<div class="com-card"><div class="com-label">Barley</div><div class="com-price">$239.77</div><div class="com-desc">Feed grain and malting. Beer and livestock.</div></div>
-<div class="com-card"><div class="com-label">Oats</div><div class="com-price">$174.02</div><div class="com-desc">Food and feed. Growing export demand.</div></div>
-<div class="com-card"><div class="com-label">Corn</div><div class="com-price">$199.45</div><div class="com-desc">Feed and ethanol. Mostly Ontario and Quebec.</div></div>
-<div class="com-card"><div class="com-label">Soybeans</div><div class="com-price">$437.29</div><div class="com-desc">Protein and oil. Strong demand from Asia.</div></div>
-<div class="com-card"><div class="com-label">Lentils</div><div class="com-price">$772.95</div><div class="com-desc">Pulse crop. India is the biggest buyer.</div></div>
-<div class="com-card"><div class="com-label">Flax</div><div class="com-price">$597.48</div><div class="com-desc">Oilseed. Food-grade and industrial uses.</div></div>
-<div class="com-card"><div class="com-label">Field Peas</div><div class="com-price">$406.22</div><div class="com-desc">Protein crop. Growing market for plant-based food.</div></div>
+      <div class="com-grid"><div class="com-card"><div class="com-label">Canola</div><div class="com-sub">Canada's biggest crop. Used for cooking oil and biodiesel.</div><div class="com-price">$619.52</div></div>
+<div class="com-card"><div class="com-label">Wheat</div><div class="com-sub">Milling wheat. Bread, pasta, export markets.</div><div class="com-price">$288.08</div></div>
+<div class="com-card"><div class="com-label">Durum</div><div class="com-sub">Premium wheat for pasta. Mostly exported.</div><div class="com-price">$309.38</div></div>
+<div class="com-card"><div class="com-label">Barley</div><div class="com-sub">Feed grain and malting. Beer and livestock.</div><div class="com-price">$239.77</div></div>
+<div class="com-card"><div class="com-label">Oats</div><div class="com-sub">Food and feed. Growing export demand.</div><div class="com-price">$174.02</div></div>
+<div class="com-card"><div class="com-label">Corn</div><div class="com-sub">Feed and ethanol. Mostly Ontario and Quebec.</div><div class="com-price">$199.45</div></div>
+<div class="com-card"><div class="com-label">Soybeans</div><div class="com-sub">Protein and oil. Strong demand from Asia.</div><div class="com-price">$437.29</div></div>
+<div class="com-card"><div class="com-label">Lentils</div><div class="com-sub">Pulse crop. India is the biggest buyer.</div><div class="com-price">$772.95</div></div>
+<div class="com-card"><div class="com-label">Flax</div><div class="com-sub">Oilseed. Food-grade and industrial uses.</div><div class="com-price">$597.48</div></div>
+<div class="com-card"><div class="com-label">Field Peas</div><div class="com-sub">Protein crop. Growing market for plant-based food.</div><div class="com-price">$406.22</div></div>
 </div>
-      <div class="card-footer">Prices in Canadian dollars per tonne &middot; 2026-07-18T01:59</div>
+      <div class="card-footer">Prices in Canadian dollars per tonne &middot; 2026-07-18T02:02</div>
     </div>
 
     <div class="module wide">
-      <div class="eyebrow"><span class="eyebrow-label">What Fertilizer Costs Right Now</span></div>
-      <table><tr><th>Product</th><th class="val">Price</th><th class="val">Change</th></tr><tr><td>Anhydrous Ammonia</td><td class="val">$884/t</td><td class="val ">— steady</td></tr>
-<tr><td>Phosphate (DAP)</td><td class="val">$719/t</td><td class="val ">— steady</td></tr>
-<tr><td>Starter (MAP)</td><td class="val">$693/t</td><td class="val ">— steady</td></tr>
-<tr><td>Potash</td><td class="val">$416/t</td><td class="val ">— steady</td></tr>
-<tr><td>Nitrogen (Urea)</td><td class="val">$572/t</td><td class="val ">— steady</td></tr>
+      <div class="eyebrow"><span class="eyebrow-label">Fertilizer</span></div>
+      <table><tr><th>Product</th><th class="val">Price</th><th class="val">Change</th></tr><tr><td>NH3 82-0-0</td><td class="val">$884/t</td><td class="val ">— steady</td></tr>
+<tr><td>DAP 18-46-0</td><td class="val">$719/t</td><td class="val ">— steady</td></tr>
+<tr><td>MAP 11-52-0</td><td class="val">$693/t</td><td class="val ">— steady</td></tr>
+<tr><td>Potash 0-0-60</td><td class="val">$416/t</td><td class="val ">— steady</td></tr>
+<tr><td>Urea 46-0-0</td><td class="val">$572/t</td><td class="val ">— steady</td></tr>
 </table>
-      <div class="card-footer">Prairie farm supply prices &middot; 2026-07-18T01:59</div>
+      <div class="card-footer">Prairie farm supply prices &middot; 2026-07-18T02:02</div>
     </div>
 
     <div class="module standard">
-      <div class="eyebrow"><span class="eyebrow-label">Farm Diesel</span></div>
+      <div class="eyebrow"><span class="eyebrow-label">Diesel</span></div>
       <div style="font-size:2.25rem;font-weight:600;line-height:1;" class="nums">$159.60<span style="font-size:1rem;color:var(--clay);"> ¢/L</span></div>
       <div style="font-size:0.875rem;color:var(--clay);margin-top:4px;">Alberta farm price</div>
-      <div style="margin-top:12px;font-size:0.8125rem;color:var(--soil);">At 35 L/100km, a 1,000-hectare farm burns about $56/hour during seeding or harvest.</div>
-      <div class="card-footer">2026-07-18T01:59</div>
+      <div style="margin-top:12px;font-size:0.8125rem;color:var(--soil);"><div style="font-size:0.8125rem;color:var(--clay);margin-top:4px;">Alberta rack price. Provincial rates vary.</div>
+      <div class="card-footer">2026-07-18T02:02</div>
     </div>
 
     <div class="module wide">
-      <div class="eyebrow"><span class="eyebrow-label">Canadian Dollar</span></div>
+      <div class="eyebrow"><span class="eyebrow-label">CAD / USD</span></div>
       <div style="display:flex;align-items:baseline;gap:10px;">
         <span style="font-size:2.25rem;font-weight:600;">$1.31</span>
         <span style="font-size:0.9375rem;" class="com-up">up $0.0110</span>
       </div>
-      <div style="font-size:0.875rem;color:var(--clay);margin-top:4px;">When the loonie is weak, grain exports are worth more. When it's strong, your inputs cost less.</div>
-      <div class="card-footer">Bank of Canada &middot; 2026-07-18T01:59</div>
+      <div style="font-size:0.875rem;color:var(--clay);margin-top:4px;">Cross-border grain sales and input costs.</div>
+      <div class="card-footer">Bank of Canada &middot; 2026-07-18T02:02</div>
     </div>
 
     <div class="module standard">
-      <div class="eyebrow"><span class="eyebrow-label">Basis by Region</span></div>
-      <div style="font-size:0.8125rem;color:var(--clay);margin-bottom:8px;">The gap between futures and what your local elevator pays.</div>
-      <table><tr><th>Region</th><th class="val">Futures</th><th class="val">Cash</th><th class="val">Basis</th></tr><tr><td>Central SK</td><td class="val">$639.11</td><td class="val">$636.22</td><td class="val com-up">Tight — good price</td></tr>
-<tr><td>Eastern MB</td><td class="val">$643.31</td><td class="val">$641.26</td><td class="val com-up">Tight — good price</td></tr>
-<tr><td>Northern SK</td><td class="val">$646.91</td><td class="val">$633.16</td><td class="val com-up">Tight — good price</td></tr>
-<tr><td>Peace Region</td><td class="val">$644.40</td><td class="val">$622.92</td><td class="val com-up">Tight — good price</td></tr>
-<tr><td>SW Manitoba</td><td class="val">$645.73</td><td class="val">$637.57</td><td class="val com-up">Tight — good price</td></tr>
-<tr><td>Southern AB</td><td class="val">$647.31</td><td class="val">$640.28</td><td class="val com-up">Tight — good price</td></tr>
+      <div class="eyebrow"><span class="eyebrow-label">Canola Basis</span></div>
+      
+      <table><tr><th>Region</th><th class="val">Futures</th><th class="val">Cash</th><th class="val">Basis</th></tr><tr><td>Central SK</td><td class="val">$639.11</td><td class="val">$636.22</td><td class="val com-up">-$0.00</td></tr>
+<tr><td>Eastern MB</td><td class="val">$643.31</td><td class="val">$641.26</td><td class="val com-up">-$0.00</td></tr>
+<tr><td>Northern SK</td><td class="val">$646.91</td><td class="val">$633.16</td><td class="val com-up">-$0.00</td></tr>
+<tr><td>Peace Region</td><td class="val">$644.40</td><td class="val">$622.92</td><td class="val com-up">-$0.00</td></tr>
+<tr><td>SW Manitoba</td><td class="val">$645.73</td><td class="val">$637.57</td><td class="val com-up">-$0.00</td></tr>
+<tr><td>Southern AB</td><td class="val">$647.31</td><td class="val">$640.28</td><td class="val com-up">-$0.00</td></tr>
 </table>
-      <div class="card-footer">Closer to zero = better local price</div>
+      <div class="card-footer">Futures minus cash &middot; Canola</div>
     </div>
 
     <div class="module hero">
-      <div class="eyebrow"><span class="eyebrow-label">Canola — Last 30 Days</span></div>
+      <div class="eyebrow"><span class="eyebrow-label">Canola Price History</span></div>
       <svg viewBox="0 0 580 130" style="width:100%;height:auto;max-height:150px;"><line x1="44" y1="8" x2="568" y2="8" stroke="var(--line)" stroke-width="0.5"/><line x1="44" y1="59" x2="568" y2="59" stroke="var(--line)" stroke-width="0.5"/><line x1="44" y1="110" x2="568" y2="110" stroke="var(--line)" stroke-width="0.5"/><line x1="44" y1="110" x2="568" y2="110" stroke="var(--line)" stroke-width="1"/><polyline points="44,12 62,40 80,37 98,37 116,38 134,63 152,71 170,86 188,46 206,55 224,54 242,22 260,96 278,102 296,82 315,65 333,71 351,22 369,110 387,94 405,25 423,100 441,9 459,8 477,73 495,9 513,76 531,86 549,86 568,35" fill="var(--sprout)" fill-opacity="0.08" stroke="var(--sprout)" stroke-width="2.5" stroke-linejoin="round"/><text x="570" y="35" font-size="11" font-weight="700" fill="var(--sprout)">$619.52</text><text x="44" y="124" text-anchor="middle" font-size="7" fill="var(--clay)">06-18</text><text x="568" y="124" text-anchor="middle" font-size="7" fill="var(--clay)">07-17</text></svg>
       <div class="card-footer">Closing prices, Canadian dollars per tonne</div>
     </div>
@@ -124,8 +124,8 @@ td{padding:7px 10px;border-bottom:1px solid var(--line)}
 
 
     <div class="module wide">
-      <div class="eyebrow"><span class="eyebrow-label">How the Crop Is Growing</span></div>
-      <div style="font-size:0.8125rem;color:var(--clay);margin-bottom:8px;">Growing degree days compared to normal. More heat = faster development.</div>
+      <div class="eyebrow"><span class="eyebrow-label">Crop Development</span></div>
+      
       <table><tr><th>City</th><th class="val">This Year</th><th class="val">Normal</th><th class="val">Progress</th></tr><tr><td>Brandon</td><td class="val">1,152</td><td class="val">1,080</td><td class="val" style="color:var(--sprout);">+71 days ahead</td></tr>
 <tr><td>Edmonton</td><td class="val">971</td><td class="val">950</td><td class="val" style="color:var(--sprout);">+20 days ahead</td></tr>
 <tr><td>Lethbridge</td><td class="val">1,305</td><td class="val">1,250</td><td class="val" style="color:var(--sprout);">+55 days ahead</td></tr>
@@ -135,22 +135,22 @@ td{padding:7px 10px;border-bottom:1px solid var(--line)}
 <tr><td>Swift Current</td><td class="val">1,157</td><td class="val">1,100</td><td class="val" style="color:var(--sprout);">+56 days ahead</td></tr>
 <tr><td>Winnipeg</td><td class="val">1,246</td><td class="val">1,190</td><td class="val" style="color:var(--sprout);">+56 days ahead</td></tr>
 </table>
-      <div class="card-footer">Base 5°C &middot; 2026-07-18T01:59</div>
+      <div class="card-footer">Base 5°C &middot; 2026-07-18T02:02</div>
     </div>
 
     <div class="module wide">
-      <div class="eyebrow"><span class="eyebrow-label">Rail Freight Rates</span></div>
+      <div class="eyebrow"><span class="eyebrow-label">Grain Freight</span></div>
       <table><tr><th>Route</th><th class="val">Rate</th><th class="val">Change</th></tr><tr><td>Calgary → Vancouver</td><td class="val">$27.30/t</td><td class="val ">— steady</td></tr>
 <tr><td>Edmonton → Prince Rupert</td><td class="val">$30.11/t</td><td class="val ">— steady</td></tr>
 <tr><td>Regina → Vancouver</td><td class="val">$43.44/t</td><td class="val ">— steady</td></tr>
 <tr><td>Saskatoon → Churchill</td><td class="val">$38.11/t</td><td class="val ">— steady</td></tr>
 <tr><td>Winnipeg → Thunder Bay</td><td class="val">$36.54/t</td><td class="val ">— steady</td></tr>
 </table>
-      <div class="card-footer">Grain rates per tonne &middot; 2026-07-18T01:59</div>
+      <div class="card-footer">Grain rates per tonne &middot; 2026-07-18T02:02</div>
     </div>
 
     <div class="module standard">
-      <div class="eyebrow"><span class="eyebrow-label">Grain Moving Through Ports</span></div>
+      <div class="eyebrow"><span class="eyebrow-label">Export Volumes</span></div>
       <table><tr><th>Port</th><th class="val">Volume</th><th class="val">Week</th></tr><tr><td>Montreal</td><td class="val">61,650 tonnes</td><td>2026-07-11</td></tr>
 <tr><td>Prince Rupert</td><td class="val">90,639 tonnes</td><td>2026-07-11</td></tr>
 <tr><td>Thunder Bay</td><td class="val">118,790 tonnes</td><td>2026-07-11</td></tr>
@@ -168,7 +168,7 @@ td{padding:7px 10px;border-bottom:1px solid var(--line)}
 </div>
 
 <footer style="padding:16px 24px;text-align:center;font-size:0.625rem;color:var(--clay);border-top:1px solid var(--line);font-family:'IBM Plex Mono',monospace;">
-  Field Data &middot; Free for Canadian farmers &middot; Prices from public markets
+  Field Data &middot; Market data for Canadian agriculture &middot; Prices from public exchanges
 </footer>
 </body>
 </html>
