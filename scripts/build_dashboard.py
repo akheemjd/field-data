@@ -131,10 +131,11 @@ basis_data = DB.execute("SELECT region, futures_price, cash_price, basis FROM (S
 basis_rows = ''
 for r in basis_data:
     b = r['basis'] if r['basis'] is not None else 0
-    strong = b and b > -4
-    cls = 'com-up' if strong else ''
-    note = 'strong' if strong else 'wide' if b and b<-8 else 'typical'
-    basis_rows += f'<tr><td>{r["region"]}</td><td class="val">${r["futures_price"]:,.2f}</td><td class="val">${r["cash_price"]:,.2f}</td><td class="val {cls}">${{b if b else 0:,.2f}} <span style="font-size:0.625rem;">({note})</span></td></tr>\n'
+    if b > -3: note, cls = "Tight — good price", "com-up"
+    elif b > -8: note, cls = "Average", ""
+    elif b > -15: note, cls = "Wide — shop around", "com-down"
+    else: note, cls = "Very wide — check other elevators", "com-down"
+    basis_rows += '<tr><td>'+r['region']+'</td><td class="val">$'+'{:,.2f}'.format(r['futures_price'])+'</td><td class="val">$'+'{:,.2f}'.format(r['cash_price'])+'</td><td class="val '+cls+'">'+note+'</td></tr>\n'
 
 # === GDD ===
 gdds = DB.execute("SELECT city, gdd, normal_gdd FROM (SELECT city, gdd, normal_gdd, ROW_NUMBER() OVER (PARTITION BY city ORDER BY date DESC) rn FROM gdd_data) WHERE rn<=1").fetchall()
