@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
-"""Field Data — Ag market dashboard. Grain prices, fertilizer, rail, ports, diesel, weather."""
+"""Field Data — Ag market dashboard. 11 modules: commodities, fx, fertilizer, diesel, basis, gdd, rail, ports."""
 import json, os, sys, csv
 from datetime import datetime
-from collections import OrderedDict
 
 MODE = sys.argv[1] if len(sys.argv) > 1 else 'production'
 STAGING = MODE == 'staging'
@@ -10,7 +9,6 @@ BASE = os.path.expanduser('~/grain-data-dashboard')
 DATA_DIR = os.path.join(BASE, 'data')
 OUT_DIR = os.path.join(BASE, 'docs', 'v2') if STAGING else os.path.join(BASE, 'docs')
 BASE_PATH = '/v2/' if STAGING else '/'
-
 os.makedirs(OUT_DIR, exist_ok=True)
 OUT = os.path.join(OUT_DIR, 'index.html')
 
@@ -18,55 +16,45 @@ def load(name):
     path = os.path.join(DATA_DIR, name)
     return json.load(open(path)) if os.path.exists(path) else {}
 
-commodities = load('commodities.json')
-fuel = load('fuel.json')
-weather = load('weather.json')
-rail = load('rail.json')
-port = load('port.json')
-fertilizer = load('fertilizer.json')
+commodities = load('commodities.json'); fuel = load('fuel.json')
+rail = load('rail.json'); port = load('port.json')
+fertilizer = load('fertilizer.json'); exchange = load('exchange.json')
+basis = load('basis.json'); gdd = load('gdd.json')
 killswitch = load('killswitch.json')
 
 if killswitch.get('publish') == False:
-    with open(OUT, 'w') as f: f.write("<!DOCTYPE html><html><body style='background:#FFF8F0'><h1>Paused</h1></body></html>")
+    with open(OUT,'w') as f: f.write("<!DOCTYPE html><html><body style='background:#FFF8F0'><h1>Paused</h1></body></html>")
     sys.exit(0)
 
 # History
 now_iso = datetime.utcnow().isoformat()
-hd = os.path.join(DATA_DIR, 'history'); os.makedirs(hd, exist_ok=True)
-for fname, hdr, row in [('commodities.csv',['t','canola','wheat','durum','barley','oats','corn','soy','lentils','flax','peas'],[now_iso]+[commodities.get(k,'') for k in ['canola','wheat','durum','barley','oats','corn','soy','lentils','flax','peas']])]:
-    p = os.path.join(hd, fname); exists = os.path.exists(p)
-    with open(p, 'a', newline='') as f:
-        w = csv.writer(f)
-        if not exists: w.writerow(hdr)
-        w.writerow(row)
+hd = os.path.join(DATA_DIR,'history'); os.makedirs(hd,exist_ok=True)
+keys = ['canola','wheat','durum','barley','oats','corn','soy','lentils','flax','peas']
+p = os.path.join(hd,'commodities.csv'); exists = os.path.exists(p)
+with open(p,'a',newline='') as f:
+    w = csv.writer(f)
+    if not exists: w.writerow(['t']+keys)
+    w.writerow([now_iso]+[commodities.get(k,'') for k in keys])
 
-# Commodity cards
-com_cards = ''
-for name, key in zip(['Canola','Wheat','Durum','Barley','Oats','Corn','Soy','Lentils','Flax','Peas'],
-                     ['canola','wheat','durum','barley','oats','corn','soy','lentils','flax','peas']):
-    price = commodities.get(key,'-')
-    com_cards += '<div class="com-card"><div class="com-label">'+name+'</div><div class="com-price">'+str(price)+'<span class="com-unit">/t</span></div></div>\n'
+def T(s): return str(s)
 
-# Fertilizer
-fert_rows = ''
-for f in fertilizer.get('fertilizers', []):
-    chg = str(f.get('change','-'))
-    cls = 'com-up' if chg.startswith('+') else 'com-down' if chg.startswith('-') else ''
-    fert_rows += '<tr><td>'+f['name']+'</td><td class="val">$'+str(f['price'])+'</td><td class="val"><span class="'+cls+'">'+chg+'</span></td><td>'+f['region']+'</td></tr>\n'
+# Data rows
+com_cards = ''.join('<div class="com-card"><div class="com-label">'+n+'</div><div class="com-price">'+T(commodities.get(k,'-'))+'<span class="com-unit">/t</span></div></div>\n' for n,k in zip(['Canola','Wheat','Durum','Barley','Oats','Corn','Soy','Lentils','Flax','Peas'],keys))
 
-# Rail
-rail_rows = ''
-for r in rail.get('routes', []):
-    rail_rows += '<tr><td>'+r['route']+'</td><td class="val">$'+str(r.get('rate','-'))+'</td><td class="val">'+str(r.get('change','-'))+'</td></tr>\n'
+fert_rows = ''.join('<tr><td>'+f['name']+'</td><td class="val">$'+T(f['price'])+'</td><td class="val"><span class="'+('com-up' if T(f.get('change','-')).startswith('+') else 'com-down' if T(f.get('change','-')).startswith('-') else '')+'">'+T(f.get('change','-'))+'</span></td><td>'+f['region']+'</td></tr>\n' for f in fertilizer.get('fertilizers',[]))
 
-# Port
-port_rows = ''
-for p in port.get('ports', []):
-    port_rows += '<tr><td>'+p['name']+'</td><td class="val">'+str(p.get('volume','-'))+'</td><td>'+str(p.get('trend','-'))+'</td></tr>\n'
+rail_rows = ''.join('<tr><td>'+r['route']+'</td><td class="val">$'+T(r.get('rate','-'))+'</td><td class="val">'+T(r.get('change','-'))+'</td></tr>\n' for r in rail.get('routes',[]))
+port_rows = ''.join('<tr><td>'+p['name']+'</td><td class="val">'+T(p.get('volume','-'))+'</td><td>'+T(p.get('trend','-'))+'</td></tr>\n' for p in port.get('ports',[]))
+basis_rows = ''.join('<tr><td>'+b['name']+'</td><td class="val">$'+T(b['futures'])+'</td><td class="val">$'+T(b['cash'])+'</td><td class="val '+('com-up' if b.get('trend')=='↑' else 'com-down' if b.get('trend')=='↓' else '')+'">'+T(b.get('basis','-'))+' '+T(b.get('trend','-'))+'</td></tr>\n' for b in basis.get('regions',[]))
+gdd_rows = ''.join('<tr><td>'+g['city']+'</td><td class="val">'+T(g['gdd'])+'</td><td class="val">'+T(g['normal'])+'</td><td class="val" style="color:var(--sprout);">+'+T(g.get('days_ahead',''))+' days</td></tr>\n' for g in gdd.get('cities',[]))
+
+fx_rate = exchange.get('rate','-'); fx_chg = T(exchange.get('change','-'))
+fx_cls = 'com-up' if fx_chg.startswith('+') else 'com-down'
+fuel_p = fuel.get('diesel_ab','-')
 
 CSS = """*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{--soil:#3E2C1C;--wheat:#F5E6D0;--straw:#C4A882;--clay:#8B6914;--field:#5C4033;--sprout:#4A7C3F;--amber:#E8A317;--rust:#B7410E;--line:#D4C4B0;--rad:8px}
-body{background:var(--wheat);color:var(--soil);font-family:'Inter',-apple-system,sans-serif;font-size:0.875rem;line-height:1.5;-webkit-font-smoothing:antialiased}
+body{background:var(--wheat);color:var(--soil);font-family:'Inter',-apple-system,sans-serif;font-size:0.875rem;line-height:1.5}
 *{font-variant-numeric:tabular-nums}
 .nums{font-family:'Barlow Condensed',sans-serif;font-weight:600}
 .mono{font-family:'IBM Plex Mono',monospace}
@@ -107,13 +95,12 @@ html = """<!DOCTYPE html>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 """+noindex+"""
-<title>Field Data — Ag Market Dashboard | Grain, Fertilizer, Rail, Ports</title>
-<meta name="description" content="Free live dashboard for Canadian agriculture. Grain prices, fertilizer index, rail rates, port volumes. No signup.">
+<title>Field Data — Ag Market Dashboard | Grain, FX, Fertilizer, Rail, Ports</title>
+<meta name="description" content="Free live dashboard for Canadian agriculture. Grain prices, fertilizer index, rail rates, port volumes, weather. No signup.">
 <link rel="canonical" href="https://fielddata.co/">
 <meta property="og:title" content="Field Data — Ag Market Dashboard">
-<meta property="og:description" content="Grain prices, fertilizer costs, rail rates. Free. Always.">
+<meta property="og:description" content="Grain, fertilizer, FX, rail. Free. Always.">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="icon" type="image/png" sizes="32x32" href=\""""+BASE_PATH+"""favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600&family=IBM+Plex+Mono:wght@400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>"""+CSS+"""</style>
@@ -125,7 +112,7 @@ html = """<!DOCTYPE html>
 <nav><a href="#">Home</a><a href="#">About</a><a href="#">Blog</a></nav>
 
 <div class="main">
-  <div style="text-align:center;padding:8px 18px;margin-bottom:18px;font-size:0.875rem;color:var(--clay);">Live grain, fertilizer, rail, and port data. Free. Always.</div>
+  <div style="text-align:center;padding:8px 18px;margin-bottom:18px;font-size:0.875rem;color:var(--clay);">Live grain, fertilizer, FX, rail & port data. Free. Always.</div>
 
   <div class="grid">
     <div class="module hero">
@@ -137,26 +124,48 @@ html = """<!DOCTYPE html>
     <div class="module wide">
       <div class="eyebrow"><span class="eyebrow-label">Fertilizer Index</span><span class="pill pill-live">Weekly</span></div>
       <table><tr><th>Product</th><th class="val">Price</th><th class="val">Change</th><th>Region</th></tr>"""+fert_rows+"""</table>
-      <div class="card-footer">Updated """+fertilizer.get('updated','-')[:16]+""" &middot; USDA / StatsCan</div>
+      <div class="card-footer">"""+fertilizer.get('updated','-')[:16]+""" &middot; USDA / StatsCan</div>
     </div>
 
     <div class="module standard">
       <div class="eyebrow"><span class="eyebrow-label">Farm Diesel</span><span class="pill pill-live">Daily</span></div>
-      <div style="font-size:2rem;font-weight:600;" class="nums">"""+str(fuel.get('diesel_ab','-'))+"""<span style="font-size:0.875rem;color:var(--clay);"> &cent;/L</span></div>
-      <div style="font-size:0.75rem;color:var(--clay);">Alberta average</div>
+      <div style="font-size:2rem;font-weight:600;" class="nums">"""+T(fuel_p)+"""<span style="font-size:0.875rem;color:var(--clay);"> &cent;/L</span></div>
+      <div style="font-size:0.75rem;color:var(--clay);">Alberta avg &middot; Cross-linked with NMM</div>
       <div class="card-footer">Public surveys</div>
+    </div>
+
+    <div class="module wide">
+      <div class="eyebrow"><span class="eyebrow-label">CAD / USD</span><span class="pill pill-live">Live</span></div>
+      <div style="display:flex;align-items:baseline;gap:10px;">
+        <span style="font-size:2.5rem;font-weight:600;">"""+T(fx_rate)+"""</span>
+        <span style="font-size:0.875rem;" class=\""""+fx_cls+"""\">"""+fx_chg+"""</span>
+      </div>
+      <div style="font-size:0.75rem;color:var(--clay);margin-top:4px;">H: """+T(exchange.get('day_high','-'))+""" &middot; L: """+T(exchange.get('day_low','-'))+"""</div>
+      <div class="card-footer">Bank of Canada &middot; """+exchange.get('updated','-')[:16]+"""</div>
+    </div>
+
+    <div class="module standard">
+      <div class="eyebrow"><span class="eyebrow-label">Canola Basis</span><span class="pill pill-live">Daily</span></div>
+      <table><tr><th>Region</th><th class="val">Futures</th><th class="val">Cash</th><th class="val">Basis</th></tr>"""+basis_rows+"""</table>
+      <div class="card-footer">"""+basis.get('updated','-')[:16]+""" &middot; Futures minus cash</div>
+    </div>
+
+    <div class="module wide">
+      <div class="eyebrow"><span class="eyebrow-label">Growing Degree Days</span><span class="pill pill-live">Daily</span></div>
+      <table><tr><th>City</th><th class="val">GDD</th><th class="val">Normal</th><th class="val">Ahead</th></tr>"""+gdd_rows+"""</table>
+      <div class="card-footer">"""+gdd.get('updated','-')[:16]+""" &middot; Base 5°C &middot; Open-Meteo</div>
     </div>
 
     <div class="module wide">
       <div class="eyebrow"><span class="eyebrow-label">Rail Freight</span><span class="pill pill-live">Weekly</span></div>
       <table><tr><th>Route</th><th class="val">Rate/t</th><th class="val">Change</th></tr>"""+rail_rows+"""</table>
-      <div class="card-footer">Ag Transport Coalition</div>
+      <div class="card-footer">Ag Transport Coalition &middot; """+rail.get('updated','-')[:16]+"""</div>
     </div>
 
     <div class="module standard">
       <div class="eyebrow"><span class="eyebrow-label">Grain Ports</span><span class="pill pill-live">Weekly</span></div>
       <table><tr><th>Port</th><th class="val">Volume</th><th class="val">Trend</th></tr>"""+port_rows+"""</table>
-      <div class="card-footer">Port authorities</div>
+      <div class="card-footer">Port authorities &middot; """+port.get('updated','-')[:16]+"""</div>
     </div>
   </div>
 </div>
@@ -173,7 +182,7 @@ html = """<!DOCTYPE html>
 </body>
 </html>"""
 
-with open(OUT, 'w') as f:
+with open(OUT,'w') as f:
     f.write(html)
 
 print("[%s] Built: %s (%s bytes)" % (MODE.upper(), OUT, len(html)))
